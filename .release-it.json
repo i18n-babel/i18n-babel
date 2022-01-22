@@ -5,6 +5,10 @@
         "requireCleanWorkingDir": false
     },
     "npm": {
-        "publish": true
+        "publish": true,
+        "access": "public"
+    },
+    "hooks": {
+        "after:bump": "npm run build"
     }
 }
