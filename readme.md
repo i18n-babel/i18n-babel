@@ -84,6 +84,10 @@ An example file could be:
 
 ## Example of use with stencil.js app
 
+### Install
+
+`npm install i18n-babel`
+
 `app.ts` config file:
 ```ts
 import { Translator } from 'i18n-babel/dist/collection/utils/translator';
