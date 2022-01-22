@@ -13,7 +13,7 @@ i18n-babel is the most powerful translations manager for javascript applications
 - Versioning of translations with local cache in localstorage
 - Supports interpolation
 - Privacy friendly: local values can be opted-in/out
-- Small footprint: < 400 Kb
+- Small footprint: < 400 kB (3.4 kB minified and gzipped)
 - Free to use
 
 # Gold sponsors
