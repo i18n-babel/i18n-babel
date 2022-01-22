@@ -1,14 +1,44 @@
 const TAG_I18N_TRANSLATIONS = '__i18njs-data';
-
-export interface IApiData {
-    apiUrl: string;
-    appId: string;
-    appSecret: string;
+export interface II18nOptions {
+    /** Allowed languages array, if found language is not in this array, will fall back to default, defaults to ['en'] */
+    availableLangs: string[];
+    /** The default language to select when the selected one is not found in availableLangs, defaults to 'en' */
+    defaultLanguage?: string;
+    /** Will take precedence over navigator language, defaults to 'en' */
+    userLanguage?: string;
+    /** Show missing translations in console.warn, defaults to false */
+    isShowMissing?: boolean;
+    /** Allow the use of cookie `lang` to save the language and localstorage to save translations and versions, defaults to false */
+    isLocalValuesAllowed?: boolean;
+    /** Api url to get remote updates, defailts to null */
+    apiUrl?: string;
+    /** App id to get remote updates, defailts to null */
+    appId?: string;
+    /** App secret to get remote updates, defailts to null */
+    appSecret?: string;
+    /** The tag that will be sent to server when missing string is found, defaults to 'app' */
+    missingTag?: string;
+    /** The tags to filter strings on server side, defaults [] */
+    tags?: string[];
 }
 
 export type TypeTData = {
     [key: string]: string;
 };
+
+export type TypeTranslationsConfig = {
+    availableLangs: string[];
+    translations: TypeTData;
+};
+
+
+export enum i18nEvents {
+    updateTranslations = 'i18n-update-translations'
+}
+
+export function raiseEvent(eventName: i18nEvents) {
+    document.dispatchEvent(new Event(eventName));
+}
 
 /**
  * Devuelve la tag que se usará para el localstorage, compuesta por estos
@@ -43,13 +73,19 @@ export function removeStorageT(lang: string): void {
         .map(key => localStorage.removeItem(key));
 }
 
+export function clearLocalStorage() {
+    Object.keys(localStorage)
+        .filter(key => key.startsWith(TAG_I18N_TRANSLATIONS))
+        .map(key => localStorage.removeItem(key));
+}
+
 /**
  * Devuelve la versión, solamente habrá una versión en localstorage, ya que
  * la anterior se elimina antes de guardar la nueva.
  * @param lang El idioma para el que se quieren las traducciones
  */
-export function getStorageVersion(lang: string): number {
+export function getStorageVersion(lang: string, defaultVersion: string = '-1'): number {
     const tag = Object.keys(localStorage).find((tag: string) => tag.includes(getTag(lang)));
-    const version = tag ? tag.split('_').pop() : '-1';
+    const version = tag ? tag.split('_').pop() : defaultVersion;
     return parseFloat(version);
 }

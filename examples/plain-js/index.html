@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+
+<head>
+    <script type="module" src="https://unpkg.com/i18n-babel/dist/i18n-babel/i18n-babel.esm.js"></script>
+    <script nomodule src="https://unpkg.com/i18n-babel/dist/i18n-babel/i18n-babel.js"></script>
+</head>
+
+<body>
+    <h1><i18n-t>The title of the page</i18n-t></h1>
+    <p><i18n-t t-data='{"name": "i18n Babel!", "url": "https://i18n-babel.com"}'>Visit us: <a href="(%url)">(%name)</a></i18n-t></p>
+
+    <script>
+        Translator.init({ isLocalValuesAllowed: true });
+    </script>
+</body>
+
+</html>

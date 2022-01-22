@@ -1,4 +1,4 @@
-import { getStorageT, getStorageVersion, removeStorageT, setStorageT, TypeTData } from './utils';
+import { getStorageT, getStorageVersion, i18nEvents, raiseEvent, removeStorageT, setStorageT, TypeTranslationsConfig, TypeTData } from './utils';
 
 export class TranslationsDownloader {
     private apiUrl: string;
@@ -9,6 +9,7 @@ export class TranslationsDownloader {
     private tIntervalCount;
     private missingsInterval = {};
     private translationsCache = {};
+    private availableLangsCache = [];
     private notFoundCache: string[] = [];
     private missingTag: string = 'app';
     private requestOptions = {
@@ -17,10 +18,12 @@ export class TranslationsDownloader {
         'x-translate-i18n': 'js',
     };
 
-    constructor(apiUrl: string, appId: string, appSecret: string) {
+    constructor(apiUrl: string, appId: string, appSecret: string, missingTag = 'app', tags = []) {
         this.apiUrl = apiUrl;
         this.appId = appId;
         this.appSecret = appSecret;
+        this.missingTag = missingTag;
+        this.tags = tags;
     }
 
     setValues(apiUrl: string, appId: string, appSecret: string) {
@@ -29,41 +32,56 @@ export class TranslationsDownloader {
         this.appSecret = appSecret;
     }
 
+    cacheClear() {
+        this.translationsCache = {};
+        this.availableLangsCache = [];
+    }
+
     /**
-    * Obtiene las traducciones para un idioma. Primero mira en la cache y sino las obtiene de (p.ej. para es): `assets/translations/all-es.json`
+    * Obtiene las traducciones para un idioma y los idiomas disponibles.
+    * Primero mira en la cache y sino las obtiene de (p.ej. para es): `assets/translations/all-es.json`
     * @param lang Idiioma de las traducciones
     * isForceRefresh
     * @returns Un objeto json con las traducciones disponibles para ese idioma
     */
-    async getTranslations(lang: string, isForceRefresh: Boolean = false) {
+    async getTranslationsConfig(defaultAvailableLangs: string[], lang: string, isLocalValuesAllowed: boolean): Promise<TypeTranslationsConfig> {
         // - Cancelar el intervalo anterior de refresco
         // const isIdle = this.tInterval < 0;
         clearInterval(this.tInterval);
 
         // - Miramos si están en cache
-        if (this.translationsCache[lang] && !isForceRefresh) {
-            return this.translationsCache[lang];
+        if (this.translationsCache[lang]) {
+            return {
+                availableLangs: this.availableLangsCache,
+                translations: this.translationsCache[lang],
+            };
         }
 
         // - Obtememos las traducciones locales
-        const ts: TypeTData = await this.getLocal(lang);
+        const ts: TypeTData = await this.getLocal(lang, isLocalValuesAllowed);
+        const remoteAvailableLangs = defaultAvailableLangs;
         this.translationsCache[lang] = ts;
+        this.availableLangsCache = defaultAvailableLangs;
 
+        // - Miramos que no se haya iniciado ya anteriormente el proceso de descarga en background
         if (this.tInterval < 0) {
             // - Iniciamos el descargador de las remote en background
             this.tIntervalCount = 0;
             this.tInterval = setInterval(
                 async () => {
                     try {
-                        const ts: TypeTData = await this.getRemote(lang);
+                        const remoteAvailableLangs = await this.getRemoteAvailableLangs(defaultAvailableLangs);
+                        const ts: TypeTData = await this.getRemote(lang, isLocalValuesAllowed);
                         this.translationsCache[lang] = ts;
+                        this.availableLangsCache = remoteAvailableLangs;
                         clearInterval(this.tInterval);
                         this.tInterval = -1;
-                        document.dispatchEvent(new Event('i18n-update-translations'));
+                        raiseEvent(i18nEvents.updateTranslations);
                     } catch (err) {
                         console.error(err);
                     }
                     if (this.tIntervalCount >= 6) {
+                        // Timeout
                         clearInterval(this.tInterval);
                         this.tInterval = -1;
                     } else {
@@ -73,10 +91,35 @@ export class TranslationsDownloader {
                 10000,
             );
         }
-        return ts;
+        return {
+            availableLangs: remoteAvailableLangs,
+            translations: ts
+        };
     }
 
-    async getRemote(lang: string) {
+    async getRemoteAvailableLangs(defaultAvailable: string[]) {
+        if (this.apiUrl) {
+            const authQs: string = await this.createAuthQs(this.appId, this.appSecret);
+            const availableUrl = `${this.apiUrl}/lang?${authQs}`;
+            const resp = await fetch(availableUrl, {
+                method: 'GET',
+                headers: this.requestOptions,
+                credentials: 'include',
+            });
+
+            if (resp.ok) {
+                // No hay respuesta del servidor o ya tenemos la ultima locVersion en localstorage
+                return (await resp.json()) || defaultAvailable;
+            }
+
+        } else {
+            throw new Error('API URL was not configured');
+        }
+
+        return defaultAvailable;
+    }
+
+    async getRemote(lang: string, isLocalValuesAllowed: boolean) {
         if (this.apiUrl) {
             const authQs: string = await this.createAuthQs(this.appId, this.appSecret);
             const storageVersion: number = getStorageVersion(lang);
@@ -92,7 +135,7 @@ export class TranslationsDownloader {
             const locVersion = parseFloat(locVersionStr);
             if (!vResponse.ok || locVersion < 0 || locVersion === storageVersion) {
                 // No hay respuesta del servidor o ya tenemos la ultima locVersion en localstorage
-                return this.getLocal(lang);
+                return this.getLocal(lang, isLocalValuesAllowed);
             }
 
             // hay una nueva version en el servidor => la descargamos
@@ -121,7 +164,7 @@ export class TranslationsDownloader {
         }
     }
 
-    async getLocal(lang: string) {
+    async getLocal(lang: string, isLocalValuesAllowed: boolean) {
         // Check if available in localstorage and otherwise failback to assets
         const storageVersion: number = getStorageVersion(lang);
         let storageTranslations = getStorageT(lang, storageVersion);
@@ -133,13 +176,18 @@ export class TranslationsDownloader {
             version = parseFloat(versionStr);
         }
         if (storageVersion < 0 || Object.keys(storageTranslations).length === 0 || storageVersion < version) {
+            // En caso que la versión del localstorage no exista, que las traducciones del localstorage estén vacías
+            // o que la versión del localstorage sea menor que la versión en assets/translations/versions.json
+            // hay que leer los datos en assets/translations/all.json y guardarlos en locastorage
             const assetsTranslations = await fetch(`assets/translations/all${lang ? '-' : ''}${lang}.json`);
             if (assetsTranslations.status === 404 && lang !== '') {
-                return this.getLocal('');
+                // No existen valores para este idioma, cogemos los valores por defecto
+                return this.getLocal('', isLocalValuesAllowed);
             }
             if (!assetsTranslations.ok) {
                 return {};
             }
+            // Procesamos las traducciones y las guardamos en localstorage
             const translations: TypeTData = this.process(await assetsTranslations.json());
             setStorageT(lang, version, translations);
             storageTranslations = translations;

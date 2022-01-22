@@ -1,16 +1,17 @@
 import { Language } from './language';
 import { TranslationsDownloader } from './translationsDownloader';
-import { IApiData, TypeTData } from './utils';
+import { clearLocalStorage, II18nOptions, TypeTData } from './utils';
 
 /**
  * Esta clase gestiona todo el contenido de las traducciones
  */
 export class Translator {
-
     static instance: Translator;
-    private translationDownloader: TranslationsDownloader;
+    private tDonwloader: TranslationsDownloader;
     private language: Language;
-    private isShowMissing: Boolean;
+    private isShowMissing: boolean;
+    private isLocalValuesAllowed: boolean = false;
+    private availableLangs = ['en'];
 
     private constructor() {
     }
@@ -22,45 +23,81 @@ export class Translator {
         return Translator.instance;
     }
 
-    static init(availableLangs: string[], defaultLanguage: string = 'en', apiData: IApiData, isShowMissing: Boolean = false) {
+    static init(options: II18nOptions) {
         let { instance } = Translator;
-        const { apiUrl, appId, appSecret } = apiData;
+        const {
+            apiUrl,
+            appId,
+            appSecret,
+            availableLangs = ['en'], // TODO: GET /i18n/langs
+            defaultLanguage = 'en',
+            isShowMissing = false,
+            isLocalValuesAllowed = false,
+            userLanguage = null,
+            missingTag = 'app',
+            tags = [],
+        } = options;
         if (instance) {
             // Cambia los parametros de inicializacion
-            instance.language.setValues(availableLangs, defaultLanguage);
-            instance.translationDownloader.setValues(apiUrl, appId, appSecret);
+            instance.availableLangs = availableLangs;
+            instance.isLocalValuesAllowed = isLocalValuesAllowed;
+            instance.language.setValues(defaultLanguage);
+            instance.tDonwloader.setValues(apiUrl, appId, appSecret);
             return instance;
         }
         instance = new Translator();
-        instance.translationDownloader = new TranslationsDownloader(apiUrl, appId, appSecret);
-        instance.language = new Language(availableLangs, defaultLanguage);
-        instance.language.initLanguage();
+        instance.tDonwloader = new TranslationsDownloader(apiUrl, appId, appSecret, missingTag, tags);
+        instance.availableLangs = availableLangs;
+        instance.isLocalValuesAllowed = isLocalValuesAllowed;
+        instance.language = new Language(defaultLanguage, isLocalValuesAllowed, userLanguage);
+        instance.language.initLanguage(availableLangs);
         instance.isShowMissing = isShowMissing;
 
         Translator.instance = instance;
         return instance;
     }
 
-    getInstanceTD() {
-        return this.translationDownloader;
+    static setLocalValuesAllowed(isLocalValuesAllowed = false) {
+        this.getInstance().setLocalValuesAllowed(isLocalValuesAllowed);
+    }
+
+    setLocalValuesAllowed(isLocalValuesAllowed = false) {
+        this.language.setLocalValuesAllowed(isLocalValuesAllowed);
+        this.isLocalValuesAllowed = isLocalValuesAllowed;
+
+        if (!isLocalValuesAllowed) {
+            clearLocalStorage();
+        }
+    }
+
+     /**
+     * Tries to translate a text, returns the text itself if no translation is found.
+     * @param originalText text to translate
+     * @param tData Interpolation parameters
+     * @param lang  Translation language
+     * @returns Translated text
+     */
+    static t(originalText: string, tData?: TypeTData, lang?: string) {
+        return this.getInstance().t(originalText, tData, lang);
     }
 
     /**
-     * Obtiene las traducciones y busca la que coincida con originalText
-     * @param originalText Texto sin traducir
-     * @param tData
-     * @param lang  Idioma de las traducciones
-     * @returns El texto traducido
+     * Tries to translate a text, returns the text itself if no translation is found.
+     * @param originalText text to translate
+     * @param tData Interpolation parameters
+     * @param lang  Translation language
+     * @returns Translated text
      */
     // tslint:disable-next-line: function-name
     async t(originalText: string, tData?: TypeTData, lang?: string) {
-        const selectedLanguage: string = lang || this.language.getLanguage();
-        const translations: TypeTData = await this.translationDownloader.getTranslations(selectedLanguage);
+        const selectedLanguage: string = lang || this.language.getLanguage(this.availableLangs);
+        const { availableLangs, translations } = await this.tDonwloader.getTranslationsConfig(this.availableLangs, selectedLanguage, this.isLocalValuesAllowed);
+        this.availableLangs = availableLangs;
         let translated: string = originalText;
 
         if (!translations[originalText]) {
             // Missing to server
-            const missingText = await this.translationDownloader.handleMissing(originalText, selectedLanguage);
+            const missingText = await this.tDonwloader.handleMissing(originalText, selectedLanguage);
             if (translations[originalText] === '' && this.isShowMissing) {
                 // La cadena ya se ha creado, pero todavía no se ha traducido
                 console.warn(`Still missing translation for "${originalText}"`);
@@ -82,7 +119,7 @@ export class Translator {
     * @param data Json que contiene los paramatros del componente (p.ej) : `{ nombre: 'Toni', edad: 25 }`
     * @returns El texto interpolado
     */
-    interpolate(text: string, data: TypeTData) {
+    private interpolate(text: string, data: TypeTData) {
         let interpolated = text;
         if (text.indexOf('(%') > -1) {
             Object.keys(data).forEach((tkey) => {
@@ -93,8 +130,34 @@ export class Translator {
         return interpolated;
     }
 
+    /**
+     * Changes the language of the application.
+     * @param lang new language
+     */
+    static changeLanguage(lang: string) {
+        this.getInstance().changeLanguage(lang);
+    }
+
+    /**
+     * Changes the language of the application.
+     * @param lang new language
+     */
     changeLanguage(lang: string) {
-        this.language.setLanguage(lang);
+        this.language.setLanguage(this.availableLangs, lang);
+    }
+
+    /**
+     * Clears the translations cache and tries to download again the translations.
+     */
+    static cacheClear() {
+        this.getInstance().cacheClear();
+    }
+
+    /**
+     * Clears the translations cache and tries to download again the translations.
+     */
+    cacheClear() {
+        this.tDonwloader.cacheClear();
     }
 
 }
