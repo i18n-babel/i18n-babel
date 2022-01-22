@@ -1,0 +1,44 @@
+{
+  "name": "i18n-babel",
+  "version": "1.0.0",
+  "description": "Javascript i18n Translations manager",
+  "main": "dist/index.cjs.js",
+  "module": "dist/custom-elements/index.js",
+  "es2015": "dist/esm/index.js",
+  "es2017": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "collection": "dist/collection/collection-manifest.json",
+  "collection:main": "dist/collection/index.js",
+  "unpkg": "dist/i18n-babel/i18n-babel.js",
+  "repository": {
+    "url": "https://github.com/i18n-babel/i18n-babel.git"
+  },
+  "author": {
+    "name": "Miquel Martin",
+    "email": "info@i18n-babel.com"
+  },
+  "files": [
+    "dist/",
+    "loader/"
+  ],
+  "scripts": {
+    "build": "stencil build --docs",
+    "start": "stencil build --dev --watch --serve",
+    "test": "stencil test --spec --e2e",
+    "test.watch": "stencil test --spec --e2e --watchAll",
+    "generate": "stencil generate"
+  },
+  "devDependencies": {
+    "@stencil/core": "^2.0.1",
+    "tslint": "^6.1.3",
+    "tslint-config-airbnb": "^5.11.2",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,10 @@
+{
+    "git": {
+        "tagName": "v${version}",
+        "addUntrackedFiles": true,
+        "requireCleanWorkingDir": false
+    },
+    "npm": {
+        "publish": true
+    }
+}
