@@ -252,5 +252,8 @@ The backend API must implement the following routes:
     - lang: the language of the translation,
     - tag: the tag for this translation, in order to filter translations ing GET `all.json`
     - text: the missing translation
-    - extra: (window as any).location.href,
+    - extra: (window as any).location.href
 
+# License
+
+MIT
