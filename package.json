@@ -1,7 +1,7 @@
 {
   "name": "i18n-babel",
-  "version": "1.0.0",
-  "description": "Javascript i18n Translations manager",
+  "version": "1.0.1",
+  "description": "Most powerful Javascript i18n Translations manager",
   "main": "dist/index.cjs.js",
   "module": "dist/custom-elements/index.js",
   "es2015": "dist/esm/index.js",
