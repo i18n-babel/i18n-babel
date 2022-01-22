@@ -13,6 +13,7 @@
   "repository": {
     "url": "https://github.com/i18n-babel/i18n-babel.git"
   },
+  "keywords": ["i18n", "translations", "i18n javascript", "i18n html", "i18n react", "i18n angular", "i18n vue.js", "i18n stencil.js", "web component", "localization", "translate"],
   "author": {
     "name": "Miquel Martin",
     "email": "info@i18n-babel.com"
