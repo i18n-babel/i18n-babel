@@ -88,6 +88,8 @@ An example file could be:
 
 `npm install i18n-babel`
 
+### Usage
+
 `app.ts` config file:
 ```ts
 import { Translator } from 'i18n-babel/dist/collection/utils/translator';
