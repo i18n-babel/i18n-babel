@@ -1,9 +1,11 @@
 import { Language } from './language';
 import { TranslationsDownloader } from './translationsDownloader';
-import { clearLocalStorage, II18nOptions, TypeTData } from './utils';
+import { clearLocalStorage, ITranslatorOptions, TypeTData } from './utils';
 
 /**
- * Esta clase gestiona todo el contenido de las traducciones
+ * Translator is the main class of i18n-babel.
+ * Use it to initialize the i18n-babel system.
+ * It also gives access to the translation API through `t` function.
  */
 export class Translator {
     static instance: Translator;
@@ -24,7 +26,7 @@ export class Translator {
         return Translator.instance;
     }
 
-    static init(options: II18nOptions) {
+    static init(options: ITranslatorOptions) {
         let { instance } = Translator;
         const {
             apiUrl,

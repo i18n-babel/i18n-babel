@@ -1,5 +1,9 @@
 const TAG_I18N_TRANSLATIONS = '__i18njs-data';
-export interface II18nOptions {
+
+/**
+ * Interface that defines the initialization parameters of Translator
+ */
+export interface ITranslatorOptions {
     /** Allowed languages array, if found language is not in this array, will fall back to default, defaults to ['en'] */
     availableLangs: string[];
     /** The default language to select when the selected one is not found in availableLangs, defaults to 'en' */

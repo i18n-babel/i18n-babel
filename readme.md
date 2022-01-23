@@ -93,7 +93,7 @@ An example file could be:
 
 `app.ts` config file:
 ```ts
-import { Translator } from 'i18n-babel/dist/collection/utils/translator';
+import { Translator } from 'i18n-babel';
 
 import './app.deps';
 
@@ -137,7 +137,7 @@ export class AppHome {
 Translator is the main object. It is a [singleton class](https://en.wikipedia.org/wiki/Singleton_pattern) and thus it cannot be instantiated. Use `Translator.init(options)` to initialize translations. It also supports `getInstance()` to get an instance to the object at any time of lifecycle.
 All public methods of `Translator` can be used as static or instance method.
 
-### init(options: II18nOptions)
+### init(options: ITranslatorOptions)
 
 Initializes the translator object. Must be called before using i18n-babel. When called after a previous call, it will overwrite the singleton object with the new options.
 
@@ -159,10 +159,10 @@ const translator = Translator.init({
 });
 ```
 
-It accepts an II18nOptions options object with the following parameters:
+It accepts an ITranslatorOptions options object with the following parameters:
 
 ```ts
-interface II18nOptions {
+interface ITranslatorOptions {
     /** Allowed languages array, if found language is not in this array, will fall back to default, defaults to ['en'] */
     availableLangs: string[];
     /** The default language to select when the selected one is not found in availableLangs, defaults to 'en' */
