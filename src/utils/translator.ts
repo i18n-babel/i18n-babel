@@ -2,6 +2,12 @@ import { Language } from './language';
 import { TranslationsDownloader } from './translationsDownloader';
 import { clearLocalStorage, ITranslatorOptions, TypeTData } from './utils';
 
+declare global {
+    interface Window {
+        Translator: typeof Translator;
+    }
+}
+
 /**
  * Translator is the main class of i18n-babel.
  * Use it to initialize the i18n-babel system.
@@ -167,3 +173,5 @@ export class Translator {
         this.tDonwloader.cacheClear();
     }
 }
+
+window.Translator = Translator;
