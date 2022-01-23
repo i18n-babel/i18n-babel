@@ -31,12 +31,11 @@ export type TypeTranslationsConfig = {
     translations: TypeTData;
 };
 
-
-export enum i18nEvents {
-    updateTranslations = 'i18n-update-translations'
+export enum Ei18nEvents {
+    updateTranslations = 'i18n-update-translations',
 }
 
-export function raiseEvent(eventName: i18nEvents) {
+export function raiseEvent(eventName: Ei18nEvents) {
     document.dispatchEvent(new Event(eventName));
 }
 
@@ -53,7 +52,7 @@ function getTag(lang: string, version?: number) {
     return `${TAG_I18N_TRANSLATIONS}_${lang}_${version || ''}`;
 }
 
-export function getStorageT(lang: string, version: number): TypeTData | {} {
+export function getStorageT(lang: string, version: number): TypeTData | Record<string, never> {
     if (version >= 0) {
         const translations: TypeTData = JSON.parse(localStorage.getItem(getTag(lang, version)));
         if (Object.keys(translations).length > 0) {
@@ -84,8 +83,8 @@ export function clearLocalStorage() {
  * la anterior se elimina antes de guardar la nueva.
  * @param lang El idioma para el que se quieren las traducciones
  */
-export function getStorageVersion(lang: string, defaultVersion: string = '-1'): number {
-    const tag = Object.keys(localStorage).find((tag: string) => tag.includes(getTag(lang)));
-    const version = tag ? tag.split('_').pop() : defaultVersion;
+export function getStorageVersion(lang: string, defaultVersion = '-1'): number {
+    const key = Object.keys(localStorage).find((k: string) => k.includes(getTag(lang)));
+    const version = key ? key.split('_').pop() : defaultVersion;
     return parseFloat(version);
 }

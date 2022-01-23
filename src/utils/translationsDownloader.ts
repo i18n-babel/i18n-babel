@@ -1,20 +1,20 @@
-import { getStorageT, getStorageVersion, i18nEvents, raiseEvent, removeStorageT, setStorageT, TypeTranslationsConfig, TypeTData } from './utils';
+import { getStorageT, getStorageVersion, Ei18nEvents, raiseEvent, removeStorageT, setStorageT, TypeTranslationsConfig, TypeTData } from './utils';
 
 export class TranslationsDownloader {
     private apiUrl: string;
     private appId: string;
     private appSecret: string;
     private tags: string[] = [];
-    private tInterval = -1;
+    private tInterval: any = -1;
     private tIntervalCount;
     private missingsInterval = {};
     private translationsCache = {};
     private availableLangsCache = [];
     private notFoundCache: string[] = [];
-    private missingTag: string = 'app';
+    private missingTag = 'app';
     private requestOptions = {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': location.origin,
+        'Access-Control-Allow-Origin': location.origin, // eslint-disable-line no-restricted-globals
         'x-translate-i18n': 'js',
     };
 
@@ -58,10 +58,10 @@ export class TranslationsDownloader {
         }
 
         // - Obtememos las traducciones locales
-        const ts: TypeTData = await this.getLocal(lang, isLocalValuesAllowed);
-        const remoteAvailableLangs = defaultAvailableLangs;
-        this.translationsCache[lang] = ts;
-        this.availableLangsCache = defaultAvailableLangs;
+        const translations: TypeTData = await this.getLocal(lang, isLocalValuesAllowed);
+        const availableLangs = defaultAvailableLangs;
+        this.translationsCache[lang] = translations;
+        this.availableLangsCache = availableLangs;
 
         // - Miramos que no se haya iniciado ya anteriormente el proceso de descarga en background
         if (this.tInterval < 0) {
@@ -76,9 +76,9 @@ export class TranslationsDownloader {
                         this.availableLangsCache = remoteAvailableLangs;
                         clearInterval(this.tInterval);
                         this.tInterval = -1;
-                        raiseEvent(i18nEvents.updateTranslations);
+                        raiseEvent(Ei18nEvents.updateTranslations);
                     } catch (err) {
-                        console.error(err);
+                        console.error(err); // eslint-disable-line no-console
                     }
                     if (this.tIntervalCount >= 6) {
                         // Timeout
@@ -92,8 +92,8 @@ export class TranslationsDownloader {
             );
         }
         return {
-            availableLangs: remoteAvailableLangs,
-            translations: ts
+            availableLangs,
+            translations,
         };
     }
 
@@ -111,7 +111,6 @@ export class TranslationsDownloader {
                 // No hay respuesta del servidor o ya tenemos la ultima locVersion en localstorage
                 return (await resp.json()) || defaultAvailable;
             }
-
         } else {
             throw new Error('API URL was not configured');
         }
@@ -158,7 +157,6 @@ export class TranslationsDownloader {
                 return translations;
             }
             throw new Error(`${locResponse.statusText}: ${await locResponse.text()}`);
-
         } else {
             throw new Error('API URL was not configured');
         }
@@ -243,8 +241,9 @@ export class TranslationsDownloader {
             const combinedS = this.ab2str(combined);
             return btoa(combinedS);
         } catch (err) {
-            console.error(`Key derivation failed: ${err.message}`);
+            console.error(`Key derivation failed: ${err.message}`); // eslint-disable-line no-console
         }
+        return '';
     }
 
     private ab2str(buffer) {
@@ -269,19 +268,16 @@ export class TranslationsDownloader {
     * @param object translations json.
     */
     private process(object: any) {
-        return Object.keys(object).reduce(
-            (newObject, key) => {
-                if (typeof object[key] === 'object') {
-                    newObject[key] = this.process(object[key]);
-                } else if ((typeof object[key] === 'string') && (object[key] === '')) {
-                    this.notFoundCache.push(key);
-                } else {
-                    newObject[key] = object[key];
-                }
-                return newObject;
-            },
-            {},
-        );
+        return Object.keys(object).reduce((newObject, key) => {
+            if (typeof object[key] === 'object') {
+                newObject[key] = this.process(object[key]); // eslint-disable-line no-param-reassign
+            } else if ((typeof object[key] === 'string') && (object[key] === '')) {
+                this.notFoundCache.push(key);
+            } else {
+                newObject[key] = object[key]; // eslint-disable-line no-param-reassign
+            }
+            return newObject;
+        }, {});
     }
 
     handleMissing(translationID, lang) {
@@ -309,7 +305,7 @@ export class TranslationsDownloader {
                             });
                             clearInterval(this.missingsInterval[translationID]);
                         } catch (error) {
-                            console.error(error);
+                            console.error(error); // eslint-disable-line no-console
                         }
                         if (this.missingsInterval[`${translationID}-count`] >= 6) {
                             clearInterval(this.missingsInterval[translationID]);

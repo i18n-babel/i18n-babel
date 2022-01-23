@@ -10,9 +10,10 @@ export class Translator {
     private tDonwloader: TranslationsDownloader;
     private language: Language;
     private isShowMissing: boolean;
-    private isLocalValuesAllowed: boolean = false;
+    private isLocalValuesAllowed = false;
     private availableLangs = ['en'];
 
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     private constructor() {
     }
 
@@ -70,13 +71,13 @@ export class Translator {
         }
     }
 
-     /**
-     * Tries to translate a text, returns the text itself if no translation is found.
-     * @param originalText text to translate
-     * @param tData Interpolation parameters
-     * @param lang  Translation language
-     * @returns Translated text
-     */
+    /**
+    * Tries to translate a text, returns the text itself if no translation is found.
+    * @param originalText text to translate
+    * @param tData Interpolation parameters
+    * @param lang  Translation language
+    * @returns Translated text
+    */
     static t(originalText: string, tData?: TypeTData, lang?: string) {
         return this.getInstance().t(originalText, tData, lang);
     }
@@ -91,7 +92,11 @@ export class Translator {
     // tslint:disable-next-line: function-name
     async t(originalText: string, tData?: TypeTData, lang?: string) {
         const selectedLanguage: string = lang || this.language.getLanguage(this.availableLangs);
-        const { availableLangs, translations } = await this.tDonwloader.getTranslationsConfig(this.availableLangs, selectedLanguage, this.isLocalValuesAllowed);
+        const { availableLangs, translations } = await this.tDonwloader.getTranslationsConfig(
+            this.availableLangs,
+            selectedLanguage,
+            this.isLocalValuesAllowed,
+        );
         this.availableLangs = availableLangs;
         let translated: string = originalText;
 
@@ -100,9 +105,9 @@ export class Translator {
             const missingText = await this.tDonwloader.handleMissing(originalText, selectedLanguage);
             if (translations[originalText] === '' && this.isShowMissing) {
                 // La cadena ya se ha creado, pero todavía no se ha traducido
-                console.warn(`Still missing translation for "${originalText}"`);
-            } else {
-                console.warn(`Missing translation for "${missingText}"`);
+                console.warn(`Still missing translation for "${originalText}"`); // eslint-disable-line no-console
+            } else if (this.isShowMissing) {
+                console.warn(`Missing translation for "${missingText}"`); // eslint-disable-line no-console
             }
             translated = originalText;
         } else {
@@ -159,5 +164,4 @@ export class Translator {
     cacheClear() {
         this.tDonwloader.cacheClear();
     }
-
 }

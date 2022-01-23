@@ -1,4 +1,4 @@
-import { i18nEvents, raiseEvent } from './utils';
+import { Ei18nEvents, raiseEvent } from './utils';
 
 export class Language {
     private language: string;
@@ -30,7 +30,6 @@ export class Language {
     getFromAvailableDialects(availableLangs: string[], lang: string) {
         const language: string = lang.indexOf('-') < 0 ? lang : lang.split('-')[0];
         return availableLangs.find(l => l.indexOf(language) === 0) || this.defaultLanguage;
-
     }
 
     getFromAvailableLangs(availableLangs: string[], lang: string) {
@@ -40,7 +39,7 @@ export class Language {
         return this.getFromAvailableDialects(availableLangs, lang);
     }
 
-    initLanguage(availableLangs: string[], resetCookie: Boolean = false) {
+    initLanguage(availableLangs: string[], resetCookie = false) {
         let lang: string;
 
         if (this.isLocalValuesAllowed) {
@@ -52,21 +51,21 @@ export class Language {
         }
 
         if (!lang || resetCookie) {
-            lang = this.userLanguage ||
-                (window as any).navigator.userLanguage ||
-                window.navigator.language ||
-                this.defaultLanguage;
+            lang = this.userLanguage
+                || (window as any).navigator.userLanguage
+                || window.navigator.language
+                || this.defaultLanguage;
             lang = this.getFromAvailableLangs(availableLangs, lang);
             this.manageCookie(lang);
         }
 
         if (lang !== this.language) {
             this.language = lang;
-            raiseEvent(i18nEvents.updateTranslations);
+            raiseEvent(Ei18nEvents.updateTranslations);
         }
     }
 
-    getLanguage(availableLangs: string[], resetCookie: Boolean = false) {
+    getLanguage(availableLangs: string[], resetCookie = false) {
         if (!this.language) {
             this.initLanguage(availableLangs, resetCookie);
         }
@@ -78,7 +77,7 @@ export class Language {
             this.language = this.getFromAvailableLangs(availableLangs, lang);
             this.userLanguage = this.language;
             this.manageCookie(this.language);
-            raiseEvent(i18nEvents.updateTranslations);
+            raiseEvent(Ei18nEvents.updateTranslations);
         }
     }
 

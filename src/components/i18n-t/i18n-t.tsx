@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { Component, Host, Prop, Element, h, Listen } from '@stencil/core';
 
 import { Translator } from '../../utils/translator';
@@ -9,7 +10,6 @@ import { Translator } from '../../utils/translator';
 })
 
 export class I18nT {
-
     @Prop() tData: string;
     @Element() i18nTEL: HTMLI18nTElement;
     private originalText: string;
@@ -24,7 +24,7 @@ export class I18nT {
         let tData = {};
         try {
             tData = JSON.parse(this.tData || '{}');
-        } catch (e) {}
+        } catch { } // eslint-disable-line no-empty
         this.i18nTEL.innerHTML = await this.translator.t(this.originalText, tData);
     }
 
@@ -46,7 +46,6 @@ export class I18nT {
     }
 
     render() {
-        return <Host><slot></slot></Host>;
+        return <Host><slot /></Host>;
     }
-
 }

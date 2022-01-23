@@ -15,7 +15,14 @@
         "noUnusedParameters": true,
         "jsx": "react",
         "jsxFactory": "h",
-        "allowJs": true
+        "skipLibCheck": true,
+        "allowJs": true,
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "types": [
+            "jest"
+        ],
     },
     "include": [
         "src"
