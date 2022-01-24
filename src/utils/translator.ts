@@ -1,4 +1,5 @@
 import { Language } from './language';
+// eslint-disable-next-line import/no-cycle
 import { TManager } from './tManager';
 import { TranslationsDownloader } from './translationsDownloader';
 import { clearLocalStorage, Ei18nEvents, ITranslatorOptions, raiseEvent, TypeTData } from './utils';
@@ -36,8 +37,14 @@ export class Translator {
     private opts: ITranslatorOptions;
     private availableLangs: string[];
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {
+    private constructor(options: ITranslatorOptions) {
+        this.opts = options;
+        this.availableLangs = this.opts.availableLangs;
+        this.tDonwloader = new TranslationsDownloader(this.opts);
+        this.language = new Language(this.opts);
+        this.language.initLanguage(this.opts.availableLangs);
+
+        this.startDOMObserver();
     }
 
     /**
@@ -70,21 +77,15 @@ export class Translator {
             return instance;
         }
 
-        instance = new Translator();
-        instance.opts = { ...defaultOptions, ...options };
-        instance.availableLangs = instance.opts.availableLangs;
-        instance.tDonwloader = new TranslationsDownloader(instance.opts);
-        instance.language = new Language(instance.opts);
-        instance.language.initLanguage(instance.opts.availableLangs);
-
+        instance = new Translator({ ...defaultOptions, ...options });
         Translator.instance = instance;
-        const attrElmts = document.querySelectorAll(':not(i18n-t)[data-i18n]');
-        attrElmts.forEach(el => new TManager(el));
-        Translator.instance.startDOMObserver();
         return instance;
     }
 
     private startDOMObserver() {
+        const attrElmts = document.querySelectorAll(':not(i18n-t)[data-i18n]');
+        attrElmts.forEach(el => new TManager(el));
+
         const observer = new MutationObserver((mutations: MutationRecord[]) => mutations.forEach((m) => {
             if (m.type === 'childList' && m.addedNodes.length > 0) {
                 m.addedNodes.forEach((el: any) => {
@@ -118,10 +119,10 @@ export class Translator {
     }
 
     /**
-    * Tries to translate a text, returns the text itself if no translation is found.
+    * Translates a text, returns the text itself if no translation is found.
     * @param originalText text to translate
     * @param tData Interpolation parameters
-    * @param lang  Translation language
+    * @param lang Translation language
     * @returns Translated text
     */
     static t(originalText: string, tData?: TypeTData, lang?: string) {
@@ -129,13 +130,12 @@ export class Translator {
     }
 
     /**
-     * Tries to translate a text, returns the text itself if no translation is found.
+     * Translates a text, returns the text itself if no translation is found.
      * @param originalText text to translate
      * @param tData Interpolation parameters
-     * @param lang  Translation language
+     * @param lang Translation language
      * @returns Translated text
      */
-    // tslint:disable-next-line: function-name
     async t(originalText: string, tData?: TypeTData, lang?: string) {
         const selectedLanguage: string = lang || this.language.getCurrentLanguage(this.availableLangs);
         const { availableLangs, translations } = await this.tDonwloader.getTranslationsData(this.availableLangs, selectedLanguage);

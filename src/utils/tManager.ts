@@ -1,4 +1,5 @@
-import { Translator } from '..';
+// eslint-disable-next-line import/no-cycle
+import { Translator } from './translator';
 import { Ei18nEvents } from './utils';
 
 export class TManager {
