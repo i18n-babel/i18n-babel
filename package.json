@@ -1,5 +1,5 @@
 {
-  "name": "i18n-babel",
+  "name": "data-i18n",
   "version": "1.2.1",
   "description": "Most powerful Javascript i18n Translations manager",
   "main": "dist/index.cjs.js",
@@ -9,9 +9,9 @@
   "types": "dist/types/index.d.ts",
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
-  "unpkg": "dist/i18n-babel/i18n-babel.js",
+  "unpkg": "dist/data-i18n/data-i18n.js",
   "repository": {
-    "url": "https://github.com/i18n-babel/i18n-babel.git"
+    "url": "https://github.com/data-i18n/data-i18n.git"
   },
   "keywords": [
     "i18n",
@@ -28,7 +28,7 @@
   ],
   "author": {
     "name": "Miquel Martin",
-    "email": "info@i18n-babel.com"
+    "email": "info@data-i18n.com"
   },
   "files": [
     "dist/",

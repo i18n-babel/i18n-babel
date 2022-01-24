@@ -12,7 +12,7 @@ export const config: Config = {
         cloneNodeFix: false,
         slotChildNodesFix: true,
     },
-    namespace: 'i18n-babel',
+    namespace: 'data-i18n',
     outputTargets: [
         {
             type: 'dist',

@@ -1,25 +1,20 @@
-import { Ei18nEvents, raiseEvent } from './utils';
+import { Ei18nEvents, ITranslatorOptions, raiseEvent } from './utils';
 
 export class Language {
     private language: string;
-    private defaultLanguage = 'en';
-    private isLocalValuesAllowed = false;
-    private userLanguage = null;
+    private opts: ITranslatorOptions;
 
-    constructor(defaultLanguage = 'en', isLocalValuesAllowed = false, userLanguage = null) {
-        this.defaultLanguage = defaultLanguage;
-        this.language = defaultLanguage;
-        this.isLocalValuesAllowed = isLocalValuesAllowed;
-        this.userLanguage = userLanguage;
+    constructor(options: ITranslatorOptions) {
+        this.opts = options;
     }
 
-    setValues(defaultLanguage: string) {
-        this.defaultLanguage = defaultLanguage;
-    }
-
-    setLocalValuesAllowed(isLocalValuesAllowed = false) {
-        this.isLocalValuesAllowed = isLocalValuesAllowed;
+    changeOptions(options: ITranslatorOptions) {
+        this.opts = options;
         this.manageCookie(this.language);
+    }
+
+    getLangFromDialect(lang: string) {
+        return lang.indexOf('-') < 0 ? lang : lang.split('-')[0];
     }
 
     /**
@@ -28,8 +23,8 @@ export class Language {
     * @returns EL lang introducido o si no lo encuentra el defaultLanguage.
     */
     getFromAvailableDialects(availableLangs: string[], lang: string) {
-        const language: string = lang.indexOf('-') < 0 ? lang : lang.split('-')[0];
-        return availableLangs.find(l => l.indexOf(language) === 0) || this.defaultLanguage;
+        const language: string = this.getLangFromDialect(lang);
+        return availableLangs.find(l => l.indexOf(language) === 0) || this.guessLanguage(true);
     }
 
     getFromAvailableLangs(availableLangs: string[], lang: string) {
@@ -39,50 +34,65 @@ export class Language {
         return this.getFromAvailableDialects(availableLangs, lang);
     }
 
-    initLanguage(availableLangs: string[], resetCookie = false) {
-        let lang: string;
+    initLanguage(availableLangs: string[]) {
+        const lang: string = this.getDefaultLanguage(availableLangs);
 
-        if (this.isLocalValuesAllowed) {
+        if (lang !== this.language) {
+            this.language = lang;
+            raiseEvent(Ei18nEvents.updateTranslations, { lang });
+        }
+    }
+
+    guessLanguage(isSkipCookie = false, resetCookie = false) {
+        let lang: string;
+        if (this.opts.isLocalValuesAllowed && !isSkipCookie) {
             const [, cookieLang] = document.cookie.trim().match(/lang=([^;]*)/) || [];
             if (cookieLang) {
-                const [, value] = cookieLang;
-                lang = this.getFromAvailableLangs(availableLangs, value);
+                lang = this.getLangFromDialect(cookieLang);
             }
         }
 
         if (!lang || resetCookie) {
-            lang = this.userLanguage
+            lang = this.opts.userLanguage
                 || (window as any).navigator.userLanguage
                 || window.navigator.language
-                || this.defaultLanguage;
-            lang = this.getFromAvailableLangs(availableLangs, lang);
-            this.manageCookie(lang);
+                || this.opts.defaultLanguage;
+            lang = this.getLangFromDialect(lang);
+            if (resetCookie) {
+                this.manageCookie(lang);
+            }
         }
 
-        if (lang !== this.language) {
-            this.language = lang;
-            raiseEvent(Ei18nEvents.updateTranslations);
-        }
+        return lang;
     }
 
-    getLanguage(availableLangs: string[], resetCookie = false) {
+    getDefaultLanguage(availableLangs: string[]) {
+        const lang: string = this.guessLanguage(false);
+        return this.getFromAvailableLangs(availableLangs, lang);
+    }
+
+    getCurrentLanguage(availableLangs: string[]) {
         if (!this.language) {
-            this.initLanguage(availableLangs, resetCookie);
+            this.initLanguage(availableLangs);
         }
         return this.language;
     }
 
     setLanguage(availableLangs: string[], lang: string) {
         if (this.language !== lang) {
-            this.language = this.getFromAvailableLangs(availableLangs, lang);
-            this.userLanguage = this.language;
-            this.manageCookie(this.language);
-            raiseEvent(Ei18nEvents.updateTranslations);
+            const newLang = this.getFromAvailableLangs(availableLangs, lang);
+            if (newLang) {
+                this.language = newLang;
+                raiseEvent(Ei18nEvents.updateTranslations, { lang: newLang });
+            }
         }
+
+        this.manageCookie(lang);
+        return this.language;
     }
 
     manageCookie(lang: string) {
-        if (this.isLocalValuesAllowed) {
+        if (lang && this.opts.isLocalValuesAllowed) {
             const exdate: Date = new Date();
             exdate.setDate(exdate.getDate() + 20 * 365);
             document.cookie = `lang=${lang};expires=${exdate.toUTCString()};path=/`;

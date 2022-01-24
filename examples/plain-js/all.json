@@ -1,0 +1,7 @@
+{
+    "The title of the page": "Translated: The title of the page",
+    "Visit us: <a href=\"(% url %)\">(% name %)</a>": "Translated: <a href=\"(% url %)\">Visit us at (% name %)</a>",
+    "This text is <strong>not</strong> yet translated, but it is already identified in all.json file": "",
+    "Select language:": "",
+    "This element is added by code": "Translated: this element is added by code"
+}

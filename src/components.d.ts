@@ -7,7 +7,6 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface I18nT {
-        "tData": string;
     }
 }
 declare global {
@@ -23,7 +22,6 @@ declare global {
 }
 declare namespace LocalJSX {
     interface I18nT {
-        "tData"?: string;
     }
     interface IntrinsicElements {
         "i18n-t": I18nT;

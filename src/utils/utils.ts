@@ -10,7 +10,7 @@ export interface ITranslatorOptions {
     defaultLanguage?: string;
     /** Will take precedence over navigator language, defaults to 'en' */
     userLanguage?: string;
-    /** Show missing translations in console.warn, defaults to false */
+    /** Show missing translations in console, defaults to false */
     isShowMissing?: boolean;
     /** Allow the use of cookie `lang` to save the language and localstorage to save translations and versions, defaults to false */
     isLocalValuesAllowed?: boolean;
@@ -24,23 +24,39 @@ export interface ITranslatorOptions {
     missingTag?: string;
     /** The tags to filter strings on server side, defaults [] */
     tags?: string[];
+    /** Path to the location of assets files, defaults 'assets/i18n' */
+    assetsLocation: string;
+    /**
+     * Names of the translations and version files. Define it as:
+     * ```
+     * { "--": "filename1.json", "ca": "filename2.json", "en": "filename3.json", ..., "versions": "filename.json" }
+     * ```
+     * defaults: For every language, the default file is located at `all-${langCode}.json`:
+     * ```
+     * { "--": "all.json", "ca": "all-ca.json", "en": "all-en.json", ..., "versions": "versions.json" }
+     * ```
+     */
+    fileNames: { [key: string]: string };
 }
 
 export type TypeTData = {
     [key: string]: string;
 };
 
-export type TypeTranslationsConfig = {
+export type TypeTranslationsData = {
     availableLangs: string[];
     translations: TypeTData;
 };
 
 export enum Ei18nEvents {
+    translatorReady = 'i18n-translator-ready',
     updateTranslations = 'i18n-update-translations',
+    missingTranslation = 'i18n-missing-translation',
+    newTranslation = 'i18n-new-translation',
 }
 
-export function raiseEvent(eventName: Ei18nEvents) {
-    document.dispatchEvent(new Event(eventName));
+export function raiseEvent(eventName: Ei18nEvents, detail = undefined) {
+    document.dispatchEvent(detail ? new CustomEvent(eventName, { detail }) : new CustomEvent<void>(eventName));
 }
 
 /**
