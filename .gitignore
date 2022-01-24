@@ -25,3 +25,4 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 .env
 .npmrc
+logs/
