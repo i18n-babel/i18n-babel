@@ -87,7 +87,11 @@ export class TManager {
             try {
                 i18nData = JSON.parse(this.i18nData || '{}');
             } catch { } // eslint-disable-line no-empty
-            const translation = await TManager.t(this.originalText, i18nData);
+
+            let translation = this.originalText;
+            try {
+                translation = await TManager.t(this.originalText, i18nData);
+            } catch { } // eslint-disable-line no-empty
             // Prevents MutationObserver infinite loop
             this.translationResult = translation;
             // Won't raise render, but MutationObserver will catch it

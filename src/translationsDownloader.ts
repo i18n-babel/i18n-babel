@@ -201,7 +201,11 @@ export class TranslationsDownloader {
             this.localVersion = 0;
             const assetsVersion = await fetch(`${this.opts.assetsLocation}/${this.opts.fileNames?.versions || 'versions.json'}`);
             if (assetsVersion.ok) {
-                const versionJson = (await assetsVersion.json()) || {};
+                let versionJson = {};
+                try {
+                    // React returns 200 OK with main page when resource does not exist
+                    versionJson = await assetsVersion.json();
+                } catch { } // eslint-disable-line no-empty
                 const versionStr = versionJson[`version_${lang}`] || '0';
                 this.localVersion = parseFloat(versionStr);
             }
@@ -232,7 +236,11 @@ export class TranslationsDownloader {
         }
 
         // Procesamos las traducciones
-        const translations = this.process(await this.asset2Json[fileName]);
+        let json = {};
+        try {
+            json = await this.asset2Json[fileName];
+        } catch { } // eslint-disable-line no-empty
+        const translations = this.process(json);
         return translations;
     }
 

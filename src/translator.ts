@@ -356,4 +356,4 @@ export class Translator {
     }
 }
 
-window.onload = () => raiseEvent(Ei18nEvents.translatorReady);
+window.addEventListener('load', () => raiseEvent(Ei18nEvents.translatorReady));
