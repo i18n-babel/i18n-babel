@@ -15,7 +15,7 @@ i18n-babel is the most powerful translations manager for javascript applications
 - Versioning of translations with local cache in localstorage
 - Supports interpolation
 - Privacy friendly: local values can be opted-in/out
-- Small footprint: < 16 kB (4.6 kB gzipped)
+- Small footprint: ~15 kB (4.5 kB gzipped)
 - Free to use
 
 # Gold sponsors
@@ -75,8 +75,8 @@ See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/
 </head>
 
 <body>
-    <h1><i18n-t>The title of the page</i18n-t></h1>
-    <p><i18n-t i18n-babel='{"name": "i18n Babel!", "url": "https://i18n-babel.com"}'>Visit us: <a href="(%url)">(%name)</a></i18n-t></p>
+    <h1 data-i18n>Translate texts with attribute <code>data-i18n</code></h1>
+    <p><i18n-babel i18n-babel='{"name": "i18n Babel!", "url": "https://i18n-babel.com"}'>Visit us: <a href="(%url)">(%name)</a></i18n-babel></p>
 
     <script>
         Translator.init({ isLocalValuesAllowed: true });
@@ -128,7 +128,7 @@ export class AppHome {
             url: 'https://i18n-babel.com',
             name: 'i18n Babel!',
         };
-        return <p><i18n-t i18n-babel={JSON.stringify(tData)}>Visit us: <a href="(%url)">(%name)</a></i18n-t></p>;
+        return <p><i18n-babel data-i18n={JSON.stringify(tData)}>Visit us: <a href="(%url)">(%name)</a></i18n-babel></p>;
     }
 }
 ```
@@ -215,10 +215,6 @@ interface ITranslatorOptions {
      * ```
      */
     fileNames?: { [key: string]: string };
-    /** When using a custom component, it defines the tag name, defaults i18n-babel */
-    tagName?: string;
-    /** When using a custom component, it defines the attribute name for intetrpolation options, defaults data-i18n */
-    dataAttribute?: string;
 }
 ```
 
@@ -333,40 +329,6 @@ Translator.cacheClear();
 ### `window.newTranslations => { [key: string]: string }`
 
 Contains an array with all new translations found. Only available when `isShowMissing` is set to `true`.
-
-# Advanced options
-
-It is possible to completely customize the tags and attributes of the translated elements. They can be customized via `init` options:
-
-## Attribute customization
-
-The attribute name can be customized. It is recommended to follow the [HTML Syntax](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes):
-
-> Any attribute on any element whose attribute name starts with `data-` is a data attribute. Say you have an article and you want to store some extra information that doesn't have any visual representation. Just use `data` attributes for that.
-
-```html
-<p data-i18n-custom='{ "option": "whatever" }'>This string will be translated with (% option %)</p>
-
-<script>
-    Translator.init({
-        attributeName: 'data-i18n-custom',
-    });
-</script>
-```
-
-## Tag name customization
-
-The tag name can be customized. The custom elements must follow [HTML custom elements specs](https://html.spec.whatwg.org/#custom-elements) (kebab-case); they can't be single words.
-
-```html
-<i18n-t data-i18n='{ "option": "whatever" }'>This string will be translated with (% option %)</i18n-t>
-
-<script>
-    Translator.init({
-        tagName: 'i18n-t',
-    });
-</script>
-```
 
 # Backend API
 
