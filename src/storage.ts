@@ -1,6 +1,6 @@
 import { TypeTData } from './types';
 
-const TAG_I18N_TRANSLATIONS = '__i18njs-data';
+const TAG_I18N_TRANSLATIONS = '__i18n-babel-data';
 
 /**
  * Devuelve la tag que se usará para el localstorage, compuesta por estos
