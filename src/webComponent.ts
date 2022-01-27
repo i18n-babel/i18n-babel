@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-cycle
 import { TManager } from './tManager';
 
 export class I18nBabelWebcomponent extends HTMLElement {

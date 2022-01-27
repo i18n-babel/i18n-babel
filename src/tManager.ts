@@ -7,6 +7,7 @@ export class TManager {
     private refreshInterval: any = -1;
     private translationResult = '';
     private refreshIntents = 0;
+    private isTranslationInCourse = false;
     static t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>;
     static isInitialized: boolean;
 
@@ -76,7 +77,9 @@ export class TManager {
     }
 
     async backgroundRefresh() {
-        if (TManager.isInitialized) {
+        // Wait for TManager to be initialized and to finish all previous translations
+        if (TManager.isInitialized && !this.isTranslationInCourse) {
+            this.isTranslationInCourse = true;
             clearInterval(this.refreshInterval);
             this.refreshInterval = -1;
             this.refreshIntents = 0;
@@ -89,6 +92,7 @@ export class TManager {
             this.translationResult = translation;
             // Won't raise render, but MutationObserver will catch it
             this.i18nElmt.innerHTML = translation;
+            this.isTranslationInCourse = false;
         } else {
             this.refreshIntents += 1;
             this.refreshInterval = setTimeout(() => this.backgroundRefresh(), 10 * this.refreshIntents * this.refreshIntents);
