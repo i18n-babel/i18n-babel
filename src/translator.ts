@@ -30,9 +30,9 @@ const defaultOptions: ITranslatorOptions = {
 };
 
 /**
- * Translator is the main class of data-i18n.
- * Use it to initialize the data-i18n system.
- * It also gives access to the translation API through `t` function.
+ * Translator is the main entry point for i18n-babel.
+ * It can be used to initialize the i18n-babel system.
+ * It also gives access to the translation API through `Translator.t` function.
  */
 export class Translator {
     static instance: Translator;
@@ -51,13 +51,17 @@ export class Translator {
         this.language = new Language(this.opts);
         this.language.initLanguage(this.opts.availableLangs);
 
-        // custom components are not supported on es5
-        if (typeof I18nBabelWebcomponent === 'function' && /^\s*class\s+/.test(I18nBabelWebcomponent.toString())) {
+        // custom components are not supported on es5, and we also check if already defined to support hmr
+        if (typeof I18nBabelWebcomponent === 'function'
+            && /^\s*class\s+/.test(I18nBabelWebcomponent.toString())
+            && !customElements.get(this.opts.tagName)
+        ) {
             // Register custom component
             I18nBabelWebcomponent.dataAttribute = this.opts.dataAttribute;
             customElements.define(this.opts.tagName, I18nBabelWebcomponent);
         }
-        this.startDOMObserver();
+        this.processDataAttributes(document);
+        this.startDOMObserver(document);
     }
 
     /**
@@ -79,10 +83,21 @@ export class Translator {
         return !!Translator.instance;
     }
 
+    /**
+     * Initializes the Translator system. It keeps only one instance per runtime
+     * and it can be called as many times as desired. It will always return the
+     * same instance.
+     *
+     * When called twice with different options, options will be overriden.
+     *
+     * @param options translator options
+     * @returns a singleton instance to Translator
+     */
     static init(options?: ITranslatorOptions) {
         let { instance } = Translator;
         if (instance) {
             // Cambia los parametros de inicializacion
+            // TODO: cambiar la definición de tagName y attributeName
             instance.opts = { ...defaultOptions, ...options };
             instance.availableLangs = instance.opts.availableLangs;
             instance.language.changeOptions(instance.opts);
@@ -97,22 +112,35 @@ export class Translator {
         return instance;
     }
 
-    private startDOMObserver() {
-        const attrElmts = document.querySelectorAll(`:not(${this.opts.tagName})[${this.opts.dataAttribute}]`);
-        attrElmts.forEach(el => TManager.attach(el, el.getAttribute(this.opts.dataAttribute)));
+    /**
+     * Attach TManager to all elements with the `dataAttribute` attribute, traversing shadow dom's
+     */
+    private processDataAttributes(target: Element | Document) {
+        const elements = [target];
+        if (target.getElementsByTagName) {
+            elements.push(...Array.from(target.getElementsByTagName('*')));
+        }
+        elements.forEach((el: Element) => {
+            // Elements inserted via tagName are created with `customElements.define(this.opts.tagName, I18nBabelWebcomponent)`
+            // They already have TManager attached
+            if (el.hasAttribute && el.hasAttribute(this.opts.dataAttribute) && el.tagName !== this.opts.tagName) {
+                TManager.attach(el, el.getAttribute(this.opts.dataAttribute));
+            }
+            if (el.shadowRoot) {
+                Array.from(el.shadowRoot.childNodes).forEach(cn => this.processDataAttributes(cn as Element));
+                this.startDOMObserver(el.shadowRoot);
+            }
+        });
+    }
 
+    private startDOMObserver(target: Node) {
         const observer = new MutationObserver((mutations: MutationRecord[]) => mutations.forEach((m) => {
             if (m.type === 'childList' && m.addedNodes.length > 0) {
-                m.addedNodes.forEach((el: any) => {
-                    if (el instanceof Element && el.tagName !== this.opts.tagName && el.hasAttribute(this.opts.dataAttribute)) {
-                        return TManager.attach(el, el.getAttribute(this.opts.dataAttribute));
-                    }
-                    return false;
-                });
+                m.addedNodes.forEach((el: any) => this.processDataAttributes(el));
             }
         }));
         // Start watching changes on this element
-        observer.observe(document, {
+        observer.observe(target, {
             childList: true,
             attributes: true,
             subtree: true,
@@ -152,6 +180,10 @@ export class Translator {
      * @returns Translated text
      */
     async t(originalText: string, tData?: TypeTData, lang?: string) {
+        if (originalText === '') {
+            return Promise.resolve(originalText);
+        }
+
         const selectedLanguage: string = lang || this.language.getCurrentLanguage(this.availableLangs);
         const { availableLangs, translations } = await this.tDonwloader.getTranslationsData(this.availableLangs, selectedLanguage);
         this.availableLangs = availableLangs;
