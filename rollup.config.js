@@ -2,7 +2,6 @@
 import { join } from 'path';
 import { terser } from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
-// import typescript from 'rollup-plugin-typescript2';
 import typescript from '@rollup/plugin-typescript';
 import license from 'rollup-plugin-license';
 import del from 'rollup-plugin-delete';
@@ -15,20 +14,17 @@ export default {
             format: 'iife',
             exports: 'default',
             name: 'Translator',
-            // banner: `/*! ${readFileSync('./LICENSE').toString()}*/`,
         },
         {
             file: 'dist/i18n-babel.es.min.js',
             format: 'es',
             exports: 'default',
-            // banner: `/*! ${readFileSync('./LICENSE').toString()}*/`,
         },
         {
             file: 'dist/i18n-babel.min.js',
             format: 'umd',
             exports: 'default',
             name: 'Translator',
-            // banner: `/*! ${readFileSync('./LICENSE').toString()}*/`,
         },
     ],
     plugins: [

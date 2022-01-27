@@ -1,5 +1,5 @@
 // rollup.config.js
-import typescript from 'rollup-plugin-typescript2';
+import typescript from '@rollup/plugin-typescript';
 import copy from 'rollup-plugin-copy';
 import serve from 'rollup-plugin-serve';
 
@@ -9,6 +9,19 @@ export default {
         {
             file: 'dist/i18n-babel.esm.min.js',
             format: 'iife',
+            exports: 'default',
+            name: 'Translator',
+            sourcemap: true,
+        },
+        {
+            file: 'dist/i18n-babel.es.min.js',
+            format: 'es',
+            exports: 'default',
+            sourcemap: true,
+        },
+        {
+            file: 'dist/i18n-babel.min.js',
+            format: 'umd',
             exports: 'default',
             name: 'Translator',
             sourcemap: true,
