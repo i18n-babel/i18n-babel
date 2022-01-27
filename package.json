@@ -2,10 +2,10 @@
     "name": "i18n-babel",
     "version": "2.0.0",
     "description": "Most powerful Javascript i18n Translations manager",
-    "main": "dist/index.js",
-    "module": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "dist/i18n-babel.min.js",
+    "module": "dist/i18n-babel.es.min.js",
     "unpkg": "dist/i18n-babel.esm.js",
+    "types": "dist/index.d.ts",
     "repository": {
         "url": "https://github.com/i18n-babel/i18n-babel.git"
     },
@@ -32,19 +32,18 @@
         "dist/"
     ],
     "scripts": {
-        "clean": "rimraf lib dist",
-        "build": "npm run clean && tsc && webpack --mode=production",
-        "start": "npm run clean && tsc && webpack serve --progress --mode=development",
+        "clean": "rimraf dist",
+        "build": "npm run clean && rollup -c",
+        "start": "npm run clean && rollup -c rollup.config.dev.js --watch",
         "lint": "echo 'Running linter, please wait...' && (npm run lint-plain || (npm run lint-report; exit -1))",
         "lint-plain": "./node_modules/.bin/eslint --ext .js,.jsx,.ts,.tsx src/ --ignore-path .eslintignore",
         "lint-report": "./node_modules/.bin/eslint --ext .js,.jsx,.ts,.tsx src/ --ignore-path .eslintignore -f ./node_modules/eslint-html-reporter/reporter.js -o logs/eslint-report.html || opn ./logs/eslint-report.html"
     },
     "devDependencies": {
+        "@rollup/plugin-typescript": "^8.3.0",
         "@typescript-eslint/eslint-plugin": "^4.20.0",
         "@typescript-eslint/parser": "^4.20.0",
         "babel-plugin-module-resolver": "^4.1.0",
-        "compression-webpack-plugin": "^9.2.0",
-        "copy-webpack-plugin": "^10.2.1",
         "eslint": "^7.23.0",
         "eslint-config-airbnb-typescript": "^12.3.1",
         "eslint-config-prettier": "^8.1.0",
@@ -61,12 +60,14 @@
         "pre-push": "^0.1.1",
         "prettier": "^2.5.1",
         "rimraf": "^3.0.2",
-        "terser-webpack-plugin": "^5.3.0",
-        "ts-loader": "^9.2.6",
-        "typescript": "^4.4.4",
-        "webpack": "^5.67.0",
-        "webpack-cli": "^4.9.2",
-        "webpack-dev-server": "^4.7.3"
+        "rollup": "^2.66.1",
+        "rollup-plugin-copy": "^3.4.0",
+        "rollup-plugin-delete": "^2.0.0",
+        "rollup-plugin-license": "^2.6.1",
+        "rollup-plugin-serve": "^1.1.0",
+        "rollup-plugin-terser": "^7.0.2",
+        "tslib": "^2.3.1",
+        "typescript": "^4.4.4"
     },
     "pre-push": [
         "lint"

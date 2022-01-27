@@ -13,4 +13,4 @@ coverage
 .eslintrc.js
 assets/
 lib
-webpack.config*.js
+rollup.config*.js
