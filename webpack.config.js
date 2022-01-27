@@ -16,7 +16,23 @@ const config = {
     // the name to filter the second entry point for applying code
     // minification via UglifyJS
     entry: {
-        'i18n-babel.min': [PATHS.entryPoint],
+        'i18n-babel': {
+            import: PATHS.entryPoint,
+            library: {
+                name: 'Translator',
+                type: 'umd',
+                umdNamedDefine: true,
+                export: 'Translator',
+            },
+        },
+        'i18n-babel.esm': {
+            import: PATHS.entryPoint,
+            library: {
+                name: 'Translator',
+                type: 'window',
+                export: 'Translator',
+            },
+        }
     },
     // The output defines how and where we want the bundles. The special
     // value `[name]` in `filename` tell Webpack to use the name we defined above.
@@ -24,7 +40,7 @@ const config = {
     // it will be accessible at `window.Translator`
     output: {
         path: PATHS.bundles,
-        filename: '[name].js',
+        filename: '[name].min.js',
         libraryTarget: 'umd',
         library: 'Translator',
         umdNamedDefine: true,
@@ -38,21 +54,22 @@ const config = {
     // source when the user debugs the application
     devtool: 'source-map',
     plugins: [
-        new CompressionPlugin({
-            test: /\.js(\?.*)?$/i,
-        }),
         new CopyPlugin({
             patterns: [
                 { from: "src/components.d.ts" },
                 { from: "lib/index.d.ts" },
                 { from: "lib/translator.d.ts" },
                 { from: "lib/types.d.ts" },
+                { from: "lib/**/*.js", to: "esm/[name][ext]" }
             ],
+        }),
+        new CompressionPlugin({
+            test: /i18n-babel.*\.js(\?.*)?$/i,
         }),
     ],
     optimization: {
         minimize: true,
-        minimizer: [new TerserPlugin()],
+        minimizer: [new TerserPlugin({ test: /i18n-babel.*\.js(\?.*)?$/i })],
     },
     module: {
         rules: [
