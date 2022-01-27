@@ -1,10 +1,9 @@
-<span class="badge-npmversion"><a href="https://npmjs.org/package/data-i18n" title="View this project on NPM"><img src="https://img.shields.io/npm/v/data-i18n.svg" alt="NPM version" /></a></span>
-<span class="badge-npmdownloads"><a href="https://npmjs.org/package/data-i18n" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/data-i18n.svg" alt="NPM downloads" /></a></span>
-<span class="badge-buildwithstencil"><a href="" title="Built With Stencil"><img src="https://img.shields.io/badge/-Built%20With%20Stencil-16161d.svg?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjIuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA1MTIgNTEyOyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI%2BCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI%2BCgkuc3Qwe2ZpbGw6I0ZGRkZGRjt9Cjwvc3R5bGU%2BCjxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00MjQuNywzNzMuOWMwLDM3LjYtNTUuMSw2OC42LTkyLjcsNjguNkgxODAuNGMtMzcuOSwwLTkyLjctMzAuNy05Mi43LTY4LjZ2LTMuNmgzMzYuOVYzNzMuOXoiLz4KPHBhdGggY2xhc3M9InN0MCIgZD0iTTQyNC43LDI5Mi4xSDE4MC40Yy0zNy42LDAtOTIuNy0zMS05Mi43LTY4LjZ2LTMuNkgzMzJjMzcuNiwwLDkyLjcsMzEsOTIuNyw2OC42VjI5Mi4xeiIvPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNNDI0LjcsMTQxLjdIODcuN3YtMy42YzAtMzcuNiw1NC44LTY4LjYsOTIuNy02OC42SDMzMmMzNy45LDAsOTIuNywzMC43LDkyLjcsNjguNlYxNDEuN3oiLz4KPC9zdmc%2BCg%3D%3D&colorA=16161d&style=flat-square" alt="Built With Stencil" /></a></span>
+<span class="badge-npmversion"><a href="https://npmjs.org/package/i18n-babel" title="View this project on NPM"><img src="https://img.shields.io/npm/v/i18n-babel.svg" alt="NPM version" /></a></span>
+<span class="badge-npmdownloads"><a href="https://npmjs.org/package/i18n-babel" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/i18n-babel.svg" alt="NPM downloads" /></a></span>
 
-# data-i18n
+# i18n-babel
 
-data-i18n is the most powerful translations manager for javascript applications on the web.
+i18n-babel is the most powerful translations manager for javascript applications on the web.
 
 - Easy to integrate: min to no effort
 - No external dependencies: only javascript and html :)
@@ -16,12 +15,12 @@ data-i18n is the most powerful translations manager for javascript applications 
 - Versioning of translations with local cache in localstorage
 - Supports interpolation
 - Privacy friendly: local values can be opted-in/out
-- Small footprint: < 400 kB (3.4 kB minified and gzipped)
+- Small footprint: < 16 kB (4.6 kB gzipped)
 - Free to use
 
 # Gold sponsors
 
-From the creators of ***data-i18n***: translations as a service - [blablatec.com](blablatec.com)
+From the creators of ***i18n-babel***: translations as a service - [blablatec.com](blablatec.com)
 
 Move your application to the next level: the premium translations service. With [blablatec.com](blablatec.com) you can focus on what you do best: add value to your application, surrounding with valuable partners.
 
@@ -62,7 +61,7 @@ An example file could be:
 
 # Quick examples
 
-See examples in [examples folder](https://github.com/data-i18n/data-i18n/tree/master/examples).
+See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/master/examples).
 
 ## Example of use with plain Javascript
 
@@ -72,13 +71,12 @@ See examples in [examples folder](https://github.com/data-i18n/data-i18n/tree/ma
 <html>
 
 <head>
-    <script type="module" src="https://unpkg.com/data-i18n/dist/data-i18n/data-i18n.esm.js"></script>
-    <script nomodule src="https://unpkg.com/data-i18n/dist/data-i18n/data-i18n.js"></script>
+    <script src="https://unpkg.com/i18n-babel/dist/i18n-babel.js"></script>
 </head>
 
 <body>
     <h1><i18n-t>The title of the page</i18n-t></h1>
-    <p><i18n-t data-i18n='{"name": "i18n Babel!", "url": "https://data-i18n.com"}'>Visit us: <a href="(%url)">(%name)</a></i18n-t></p>
+    <p><i18n-t i18n-babel='{"name": "i18n Babel!", "url": "https://i18n-babel.com"}'>Visit us: <a href="(%url)">(%name)</a></i18n-t></p>
 
     <script>
         Translator.init({ isLocalValuesAllowed: true });
@@ -92,13 +90,13 @@ See examples in [examples folder](https://github.com/data-i18n/data-i18n/tree/ma
 
 ### Install
 
-`npm install data-i18n`
+`npm install i18n-babel`
 
 ### Usage
 
 `app.ts` config file:
 ```ts
-import { Translator } from 'data-i18n';
+import { Translator } from 'i18n-babel';
 
 import './app.deps';
 
@@ -113,7 +111,7 @@ export default () => {
 
 `app.deps.ts`:
 ```ts
-import 'data-i18n';
+import 'i18n-babel';
 ```
 
 `your-awesome-component.ts`:
@@ -127,10 +125,10 @@ import { Component, h, State, Prop } from '@stencil/core';
 export class AppHome {
     render() {
         const tData = {
-            url: 'https://data-i18n.com',
+            url: 'https://i18n-babel.com',
             name: 'i18n Babel!',
         };
-        return <p><i18n-t data-i18n={JSON.stringify(tData)}>Visit us: <a href="(%url)">(%name)</a></i18n-t></p>;
+        return <p><i18n-t i18n-babel={JSON.stringify(tData)}>Visit us: <a href="(%url)">(%name)</a></i18n-t></p>;
     }
 }
 ```
@@ -140,17 +138,17 @@ export class AppHome {
 ## Events
 
 
-| Event                      | Description                                                                                                                                | Type                  |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `i18n-translator-ready`    | Event emitted when translator is ready to be initialized                                                                                   | `CustomEvent<void>`   |
-| `i18n-update-translations` | Event emitted when translations has been changed<br>Mainly for internal purposes, `ev.detail` contains language                                 | `CustomEvent<string>` |
-| `i18n-missing-translation` | Event emitted when missing (empty) translation is found<br>`ev.detail` contains original text<br>*Only emitted when `isShowMissing` is set to `true`* | `CustomEvent<string>` |
-| `i18n-new-translation`     | Event emitted when new translation is found<br>`ev.detail` contains original text<br>*Only emitted when `isShowMissing` is set to `true`*     | `CustomEvent<string>` |
+| Event                            | Description                                                                                                                                | Type                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `i18n-babel-ready`               | Event emitted when translator is ready to be initialized                                                                                   | `CustomEvent<void>`   |
+| `i18n-babel-update-translations` | Event emitted when translations has been changed<br>Mainly for internal purposes, `ev.detail` contains language                                 | `CustomEvent<string>` |
+| `i18n-babel-missing-translation` | Event emitted when missing (empty) translation is found<br>`ev.detail` contains original text<br>*Only emitted when `isShowMissing` is set to `true`* | `CustomEvent<string>` |
+| `i18n-babel-new-translation`     | Event emitted when new translation is found<br>`ev.detail` contains original text<br>*Only emitted when `isShowMissing` is set to `true`*     | `CustomEvent<string>` |
 
 ### Example:
 
 ```ts
-document.addEventListener('i18n-missing-translation', ev => console.log('Missing translation for:', ev.detail));
+document.addEventListener('i18n-babel-missing-translation', ev => console.log('Missing translation for:', ev.detail));
 ```
 
 ## Translator
@@ -160,7 +158,7 @@ All public methods of `Translator` can be used as static or instance method.
 
 ### `init(options: ITranslatorOptions) => Translator`
 
-Initializes the translator object. Must be called before using data-i18n. When called after a previous call, it will overwrite the singleton object with the new options.
+Initializes the translator object. Must be called before using i18n-babel. When called after a previous call, it will overwrite the singleton object with the new options.
 
 - `options`: initialization options
 - **returns**: an instance to the `Translator` object
@@ -172,7 +170,7 @@ const translator = Translator.init({
     userLanguage: 'ca',
     isShowMissing: true,
     isLocalValuesAllowed: true,
-    apiUrl: `https://data-i18n.com/api/v1/application/5f7...`,
+    apiUrl: `https://i18n-babel.com/api/v1/application/5f7...`,
     appId: 'an-app-id',
     appSecret: 't8GTsNsd...',
     missingTag: 'app',
@@ -185,7 +183,7 @@ It accepts an ITranslatorOptions options object with the following parameters:
 ```ts
 interface ITranslatorOptions {
     /** Allowed languages array, if found language is not in this array, will fall back to default, defaults to ['en'] */
-    availableLangs: string[];
+    availableLangs?: string[];
     /** The default language to select when the selected one is not found in availableLangs, defaults to 'en' */
     defaultLanguage?: string;
     /** Will take precedence over navigator language, defaults to 'en' */
@@ -204,8 +202,8 @@ interface ITranslatorOptions {
     missingTag?: string;
     /** The tags to filter strings on server side, defaults [] */
     tags?: string[];
-    /** Path to the location of assets files */
-    assetsLocation: string;
+    /** Path to the location of assets files, defaults 'assets/i18n' */
+    assetsLocation?: string;
     /**
      * Names of the translations and version files. Define it as:
      * ```
@@ -216,7 +214,11 @@ interface ITranslatorOptions {
      * { "--": "all.json", "ca": "all-ca.json", "en": "all-en.json", ..., "versions": "versions.json" }
      * ```
      */
-    fileNames: { [key: string]: string };
+    fileNames?: { [key: string]: string };
+    /** When using a custom component, it defines the tag name, defaults i18n-babel */
+    tagName?: string;
+    /** When using a custom component, it defines the attribute name for intetrpolation options, defaults data-i18n */
+    dataAttribute?: string;
 }
 ```
 
@@ -252,7 +254,7 @@ Translates a text, returns the text itself if no translation is found.
 - **returns**: Translated text
 
 ```js
-const translation = await Translator.t('Hello from (% name %)!', { name: 'data-i18n' }, 'ca');
+const translation = await Translator.t('Hello from (% name %)!', { name: 'i18n-babel' }, 'ca');
 ```
 
 Given an `all-ca.json` like the following one:
@@ -262,7 +264,7 @@ Given an `all-ca.json` like the following one:
 }
 ```
 
-The variable `translation` will become: `data-i18n et saluda!`
+The variable `translation` will become: `i18n-babel et saluda!`
 
 ### `guessLanguage(isSkipCookie = false, resetCookie = false) => string`
 
@@ -331,6 +333,40 @@ Translator.cacheClear();
 ### `window.newTranslations => { [key: string]: string }`
 
 Contains an array with all new translations found. Only available when `isShowMissing` is set to `true`.
+
+# Advanced options
+
+It is possible to completely customize the tags and attributes of the translated elements. They can be customized via `init` options:
+
+## Attribute customization
+
+The attribute name can be customized. It is recommended to follow the [HTML Syntax](https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes):
+
+> Any attribute on any element whose attribute name starts with `data-` is a data attribute. Say you have an article and you want to store some extra information that doesn't have any visual representation. Just use `data` attributes for that.
+
+```html
+<p data-i18n-custom='{ "option": "whatever" }'>This string will be translated with (% option %)</p>
+
+<script>
+    Translator.init({
+        attributeName: 'data-i18n-custom',
+    });
+</script>
+```
+
+## Tag name customization
+
+The tag name can be customized. The custom elements must follow [HTML custom elements specs](https://html.spec.whatwg.org/#custom-elements) (kebab-case); they can't be single words.
+
+```html
+<i18n-t data-i18n='{ "option": "whatever" }'>This string will be translated with (% option %)</i18n-t>
+
+<script>
+    Translator.init({
+        tagName: 'i18n-t',
+    });
+</script>
+```
 
 # Backend API
 

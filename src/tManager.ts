@@ -1,29 +1,40 @@
-// eslint-disable-next-line import/no-cycle
-import { Translator } from './translator';
-import { Ei18nEvents } from './utils';
+import { Ei18nEvents, TypeTData } from './types';
 
 export class TManager {
     private i18nData: string;
-    private i18nTEL: Element;
+    private i18nElmt: Element;
     private originalText: string;
     private refreshInterval: any = -1;
     private translationResult = '';
     private refreshIntents = 0;
+    static t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>;
+    static isInitialized: boolean;
 
-    constructor(i18nTEL: Element, i18nData?: string) {
+    private constructor(i18nElmt: Element, i18nData?: string) {
         document.addEventListener(Ei18nEvents.updateTranslations, () => this.handleTranslationsUpdate());
-        this.i18nTEL = i18nTEL;
+        this.i18nElmt = i18nElmt;
         this.i18nData = i18nData;
-        this.originalText = this.i18nTEL.innerHTML;
+        this.originalText = this.i18nElmt.innerHTML;
         this.startObserver();
         this.onTextChanged();
+    }
+
+    /** Attaches translator manager to i18nElmt */
+    static attach(i18nElmt: Element, i18nData?: string) {
+        return new TManager(i18nElmt, i18nData);
+    }
+
+    static init(t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>) {
+        // To avoid dependency cycle
+        TManager.t = t;
+        TManager.isInitialized = true;
     }
 
     startObserver() {
         // Detects if there has been a change on element which should affect to translation
         const observer = new MutationObserver(m => this.onMutation(m));
         // Start watching changes on this element
-        observer.observe(this.i18nTEL, {
+        observer.observe(this.i18nElmt, {
             childList: true,
             attributes: true,
             subtree: true,
@@ -34,12 +45,12 @@ export class TManager {
     onMutation(mutations: MutationRecord[]) {
         const isTranslationNeeded = mutations.reduce((isNeeded, m) => {
             if (m.type === 'attributes' && m.attributeName === 'data-i18n') {
-                this.i18nData = this.i18nTEL.getAttribute('data-i18n');
+                this.i18nData = this.i18nElmt.getAttribute('data-i18n');
                 return true;
             }
             // Prevents MutationObserver infinite loop
-            if (m.type === 'childList' && this.translationResult !== this.i18nTEL.innerHTML) {
-                this.originalText = this.i18nTEL.innerHTML;
+            if (m.type === 'childList' && this.translationResult !== this.i18nElmt.innerHTML) {
+                this.originalText = this.i18nElmt.innerHTML;
                 return true;
             }
             return isNeeded;
@@ -65,7 +76,7 @@ export class TManager {
     }
 
     async backgroundRefresh() {
-        if (Translator.isInitialized()) {
+        if (TManager.isInitialized) {
             clearInterval(this.refreshInterval);
             this.refreshInterval = -1;
             this.refreshIntents = 0;
@@ -73,11 +84,11 @@ export class TManager {
             try {
                 i18nData = JSON.parse(this.i18nData || '{}');
             } catch { } // eslint-disable-line no-empty
-            const translation = await Translator.t(this.originalText, i18nData);
+            const translation = await TManager.t(this.originalText, i18nData);
             // Prevents MutationObserver infinite loop
             this.translationResult = translation;
             // Won't raise render, but MutationObserver will catch it
-            this.i18nTEL.innerHTML = translation;
+            this.i18nElmt.innerHTML = translation;
         } else {
             this.refreshIntents += 1;
             this.refreshInterval = setTimeout(() => this.backgroundRefresh(), 10 * this.refreshIntents * this.refreshIntents);

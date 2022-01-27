@@ -1,2 +1,4 @@
 src/
 .npmrc
+tsconfig.json
+tslint.json

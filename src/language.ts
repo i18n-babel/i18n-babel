@@ -1,4 +1,5 @@
-import { Ei18nEvents, ITranslatorOptions, raiseEvent } from './utils';
+import { Ei18nEvents, ITranslatorOptions } from './types';
+import { raiseEvent } from './utils';
 
 export class Language {
     private language: string;

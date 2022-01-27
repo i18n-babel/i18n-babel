@@ -1,8 +1,7 @@
 import { generateToken } from './auth';
-import {
-    getStorageT, getStorageVersion, Ei18nEvents, raiseEvent, removeStorageT, setStorageT,
-    TypeTranslationsData, TypeTData, ITranslatorOptions,
-} from './utils';
+import { getStorageT, getStorageVersion, removeStorageT, setStorageT } from './storage';
+import { Ei18nEvents, ITranslatorOptions, TypeTData } from './types';
+import { raiseEvent, TypeTranslationsData } from './utils';
 
 export class TranslationsDownloader {
     private opts: ITranslatorOptions;

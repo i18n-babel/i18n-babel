@@ -12,4 +12,5 @@ typings
 coverage
 .eslintrc.js
 assets/
-stencil.config.ts
+lib
+webpack.config*.js

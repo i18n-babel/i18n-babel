@@ -2,68 +2,73 @@
 <html>
 
 <head>
-    <!-- <script type="module" src="https://unpkg.com/data-i18n/dist/data-i18n/data-i18n.esm.js"></script>
-    <script nomodule src="https://unpkg.com/data-i18n/dist/data-i18n/data-i18n.js"></script> -->
-    <!-- In development -->
-    <script type="module" src="/dist/data-i18n/data-i18n.esm.js"></script>
-    <script nomodule src="/dist/data-i18n/data-i18n.js"></script>
-    <!--  -->
+    <!-- <script type="module" src="https://unpkg.com/i18n-babel/dist/i18n-babel.js"></script>
+    <script nomodule src="https://unpkg.com/i18n-babel/dist/i18n-babel.esm.js"></script> -->
+    <script src="https://unpkg.com/i18n-babel/dist/i18n-babel.esm.js"></script>
 </head>
 
 <body>
     <h1>
-        <i18n-t>The title of the page</i18n-t>
+        <i18n-babel>The title of the page</i18n-babel>
     </h1>
+
+    <label for="lang" id="langLabel" data-i18n>Select language (current: (% current %), guessed: (% guessed %)):</label>
+    <select id="langSelect" name="lang" onchange="setLanguage()">
+        <option value="" id="defaultLang" data-i18n='{"defaultLang": "unknown"}'>Default ((% defaultLang %))</option>
+        <option value="ca" data-i18n>Catalan</option>
+        <option value="en" data-i18n>English</option>
+        <option value="ru" data-i18n>Russian</option>
+    </select>
+
+    <p id="langInfo" data-i18n='{"desired": "none", "newLang": "none"}'>Desired language: (% desired %). Picked one: (% newLang %)</p>
+
     <p>
-        <i18n-t data-i18n='{"name": "i18n Babel!", "url": "https://data-i18n.com"}'>Visit us: <a href="(% url %)">(% name %)</a></i18n-t>
+        <i18n-babel data-i18n='{"name": "i18n Babel!", "url": "https://data-i18n.com"}'>Visit us: <a href="(% url %)">(% name %)</a></i18n-babel>
     </p>
     <p>
-        <i18n-t>This text is <strong>not</strong> yet translated, but it is already identified in all.json file</i18n-t>
+        <i18n-babel>This text is <strong>not</strong> yet translated, but it is already identified in all.json file</i18n-babel>
     </p>
-    <p><i18n-t>This text is <strong>not</strong> translated anywhere</i18n-t></p>
+    <p>
+        <i18n-babel>This text is <strong>not</strong> translated anywhere</i18n-babel>
+    </p>
     <p data-i18n>This text is <strong>not</strong> translated anywhere</p>
 
     <p onclick="changeCounter()">
-        <i18n-t id="counter" data-i18n='{ "count": 0 }'>Click me to change my counter display! (% count %)</i18n-t>
+        <i18n-babel id="counter" data-i18n='{ "count": 0 }'>Click me to change my counter display! (% count %)</i18n-babel>
     </p>
     <p onclick="changeSubtree()">
-        <i18n-t>Changes in subelements will also be detected, click me to change <strong id="subtree">subelement</strong></i18n-t>
+        <i18n-babel>Changes in subelements will also be detected, click me to change <strong id="subtree">subelement</strong></i18n-babel>
     </p>
 
     <p id="codeTranslated"></p>
-
-    <label for="lang" id="langLabel" data-i18n>
-        Select language (current: (% current %), guessed: (% guessed %)):
-    </label>
-    <select id="langSelect" name="lang" onchange="setLanguage()">
-        <option value="" id="defaultLang" data-i18n='{"defaultLang": "unknown"}'>Default ((% defaultLang %))</option>
-        <option value="ca" i18n-t>Catalan</option>
-        <option value="en" i18n-t>English</option>
-        <option value="ru" i18n-t>Russian</option>
-    </select>
 
     <p></p>
     <button onclick="addNewElement()">Add new translated element</button>
 
     <script>
         const counter = document.getElementById('counter');
+        const langInfo = document.getElementById('langInfo');
         const langLabel = document.getElementById('langLabel');
         const langSelect = document.getElementById('langSelect');
         const defaultLang = document.getElementById('defaultLang');
         const codeTranslated = document.getElementById('codeTranslated');
 
-        // Wait for Translator to be available
-        document.addEventListener('i18n-translator-ready', async () => {
+        async function load() {
             Translator.init({
                 assetsLocation: '/examples/plain-js',
                 isLocalValuesAllowed: true,
                 isShowMissing: true,
                 availableLangs: ['ca', 'en'],
             });
+            // We call `guessLanguage(true)` so it ignores cookie setting
             langLabel.setAttribute('data-i18n', `{ "current": "${Translator.getCurrentLanguage()}", "guessed": "${Translator.guessLanguage(true)}" }`);
             defaultLang.setAttribute('data-i18n', `{ "defaultLang": "${Translator.getDefaultLanguage()}" }`);
-            codeTranslated.innerHTML = await Translator.t('This text is translated programatically using <code>Translator.t</code> function');
-        });
+            codeTranslated.innerHTML = await Translator.t('We like random numbers: (% random %) (This text is translated programatically using <code>Translator.t</code> function)', { random: Math.random() });
+        }
+
+        // Optionally wait for Translator to be available
+        // If the script is placed before this script, it's not necessary to wait
+        document.addEventListener('i18n-babel-ready', load);
 
         let clicks = 0;
         function changeCounter() {
@@ -80,8 +85,13 @@
         async function setLanguage() {
             const { value } = langSelect;
             const newLang = Translator.setLanguage(value);
-            langLabel.setAttribute('data-i18n', `{ "current": "${Translator.getCurrentLanguage()}", "guessed": "${Translator.guessLanguage(true)}" }`);
-            codeTranslated.innerHTML = await Translator.t('Desired language: (% value %). Picked one: (% newLang %)', { value, newLang });
+            // We call `guessLanguage(true)` so it ignores cookie setting
+            langLabel.setAttribute('data-i18n', JSON.stringify({
+                current: Translator.getCurrentLanguage(),
+                guessed: Translator.guessLanguage(true),
+            }));
+            codeTranslated.innerHTML = await Translator.t('We like random numbers: (% random %) (This text is translated programatically using <code>Translator.t</code> function)', { random: Math.random() });
+            langInfo.setAttribute('data-i18n', JSON.stringify({ desired: value, newLang }));
         }
 
         function addNewElement() {

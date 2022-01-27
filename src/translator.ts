@@ -1,8 +1,10 @@
 import { Language } from './language';
-// eslint-disable-next-line import/no-cycle
+import { clearLocalStorage } from './storage';
 import { TManager } from './tManager';
 import { TranslationsDownloader } from './translationsDownloader';
-import { clearLocalStorage, Ei18nEvents, ITranslatorOptions, raiseEvent, TypeTData } from './utils';
+import { Ei18nEvents, ITranslatorOptions, TypeTData } from './types';
+import { raiseEvent } from './utils';
+import { I18nBabelWebcomponent } from './webComponent';
 
 declare global {
     interface Window {
@@ -14,7 +16,7 @@ declare global {
 window.newTranslations = window.newTranslations || {};
 
 const defaultOptions: ITranslatorOptions = {
-    availableLangs: ['en'], // TODO: GET /i18n/langs
+    availableLangs: ['en'],
     defaultLanguage: 'en',
     isShowMissing: false,
     isLocalValuesAllowed: false,
@@ -23,6 +25,8 @@ const defaultOptions: ITranslatorOptions = {
     tags: [],
     assetsLocation: 'assets/i18n',
     fileNames: {},
+    tagName: 'i18n-babel',
+    dataAttribute: 'data-i18n',
 };
 
 /**
@@ -38,12 +42,21 @@ export class Translator {
     private availableLangs: string[];
 
     private constructor(options: ITranslatorOptions) {
+        if (Translator.isInitialized()) {
+            throw new Error('Translator cannot be instantiated, please use `Translator.init()`');
+        }
         this.opts = options;
         this.availableLangs = this.opts.availableLangs;
         this.tDonwloader = new TranslationsDownloader(this.opts);
         this.language = new Language(this.opts);
         this.language.initLanguage(this.opts.availableLangs);
 
+        // custom components are not supported on es5
+        if (typeof I18nBabelWebcomponent === 'function' && /^\s*class\s+/.test(I18nBabelWebcomponent.toString())) {
+            // Register custom component
+            I18nBabelWebcomponent.dataAttribute = this.opts.dataAttribute;
+            customElements.define(this.opts.tagName, I18nBabelWebcomponent);
+        }
         this.startDOMObserver();
     }
 
@@ -66,7 +79,7 @@ export class Translator {
         return !!Translator.instance;
     }
 
-    static init(options: ITranslatorOptions) {
+    static init(options?: ITranslatorOptions) {
         let { instance } = Translator;
         if (instance) {
             // Cambia los parametros de inicializacion
@@ -79,18 +92,20 @@ export class Translator {
 
         instance = new Translator({ ...defaultOptions, ...options });
         Translator.instance = instance;
+        // This has been done to avoid dependency cycle
+        TManager.init(instance.t.bind(instance));
         return instance;
     }
 
     private startDOMObserver() {
-        const attrElmts = document.querySelectorAll(':not(i18n-t)[data-i18n]');
-        attrElmts.forEach(el => new TManager(el));
+        const attrElmts = document.querySelectorAll(`:not(${this.opts.tagName})[${this.opts.dataAttribute}]`);
+        attrElmts.forEach(el => TManager.attach(el, el.getAttribute(this.opts.dataAttribute)));
 
         const observer = new MutationObserver((mutations: MutationRecord[]) => mutations.forEach((m) => {
             if (m.type === 'childList' && m.addedNodes.length > 0) {
                 m.addedNodes.forEach((el: any) => {
-                    if (el instanceof Element && el.tagName !== 'i18n-t' && el.hasAttribute('data-i18n')) {
-                        return new TManager(el);
+                    if (el instanceof Element && el.tagName !== this.opts.tagName && el.hasAttribute(this.opts.dataAttribute)) {
+                        return TManager.attach(el, el.getAttribute(this.opts.dataAttribute));
                     }
                     return false;
                 });
@@ -182,7 +197,7 @@ export class Translator {
             });
         }
         // Replace all missing data
-        interpolated = interpolated.replace(new RegExp('\\(%.*%\\)', 'g'), '');
+        interpolated = interpolated.replace(new RegExp('\\(%[^)]+%\\)', 'g'), '');
         return interpolated;
     }
 
@@ -309,5 +324,4 @@ export class Translator {
     }
 }
 
-window.Translator = Translator;
-raiseEvent(Ei18nEvents.translatorReady);
+window.onload = () => raiseEvent(Ei18nEvents.translatorReady);
