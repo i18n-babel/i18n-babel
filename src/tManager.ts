@@ -8,10 +8,12 @@ export class TManager {
     private translationResult = '';
     private refreshIntents = 0;
     private isTranslationInCourse = false;
-    static t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>;
-    static isInitialized: boolean;
+    private static t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>;
+    private static isInitialized: boolean;
+    private static i18nBabelProcessedAttrName = 'data-i18n-babel';
 
     private constructor(i18nElmt: Element, i18nData?: string) {
+        i18nElmt.setAttribute(TManager.i18nBabelProcessedAttrName, '');
         document.addEventListener(Ei18nEvents.updateTranslations, () => this.handleTranslationsUpdate());
         this.i18nElmt = i18nElmt;
         this.i18nData = i18nData;
@@ -22,7 +24,12 @@ export class TManager {
 
     /** Attaches translator manager to i18nElmt */
     static attach(i18nElmt: Element, i18nData?: string) {
-        return new TManager(i18nElmt, i18nData);
+        // Skip already processed elements
+        if (i18nElmt.hasAttribute(TManager.i18nBabelProcessedAttrName)) {
+            return;
+        }
+        // eslint-disable-next-line no-new
+        new TManager(i18nElmt, i18nData);
     }
 
     static init(t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>) {
