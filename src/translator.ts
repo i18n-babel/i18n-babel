@@ -25,6 +25,7 @@ const defaultOptions: ITranslatorOptions = {
     tags: [],
     assetsLocation: 'assets/i18n',
     fileNames: {},
+    isEnableAttr: false,
     tagName: 'i18n-babel',
     dataAttribute: 'data-i18n',
 };
@@ -60,8 +61,10 @@ export class Translator {
             I18nBabelWebcomponent.dataAttribute = this.opts.dataAttribute;
             customElements.define(this.opts.tagName, I18nBabelWebcomponent);
         }
-        this.processDataAttributes(document);
-        this.startDOMObserver(document);
+        if (this.opts.isEnableAttr) {
+            this.processDataAttributes(document);
+            this.startDOMObserver(document);
+        }
     }
 
     /**
@@ -70,7 +73,7 @@ export class Translator {
      */
     static getInstance() {
         if (!Translator.isInitialized()) {
-            throw new Error('Translator is not yet initialized, please call Translator.init() first');
+            return Translator.init();
         }
         return Translator.instance;
     }
@@ -98,10 +101,16 @@ export class Translator {
         if (instance) {
             // Cambia los parametros de inicializacion
             // TODO: cambiar la definición de tagName y attributeName
+            const isProcessDOMObserver = !instance.opts.isEnableAttr && options.isEnableAttr;
             instance.opts = { ...defaultOptions, ...options };
             instance.availableLangs = instance.opts.availableLangs;
             instance.language.changeOptions(instance.opts);
             instance.tDonwloader.changeOptions(instance.opts);
+
+            if (isProcessDOMObserver) {
+                instance.processDataAttributes(document);
+                instance.startDOMObserver(document);
+            }
             return instance;
         }
 
@@ -117,6 +126,7 @@ export class Translator {
      */
     private processDataAttributes(target: Element | Document) {
         const elements = [target];
+        // Check if it has subelements
         if (target.getElementsByTagName) {
             elements.push(...Array.from(target.getElementsByTagName('*')));
         }
@@ -221,6 +231,7 @@ export class Translator {
     * @returns El texto interpolado
     */
     private interpolate(text: string, data: TypeTData) {
+        // TODO: support deep nesting
         let interpolated = text;
         if (text.indexOf('(%') > -1) {
             Object.keys(data).forEach((tkey) => {

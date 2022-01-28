@@ -35,16 +35,33 @@ export interface ITranslatorOptions {
      * ```
      */
     fileNames?: { [key: string]: string };
+    /**
+     * Enables attribute translations. This is less performant than tag option because it has to traverse and observe all DOM
+     * to be reactive to changes. Defaults `false`
+     */
+    isEnableAttr?: boolean;
     /** *EXPERIMENTAL*: When using a custom component, it defines the tag name, defaults `'i18n-babel'` */
     tagName?: string;
     /** *EXPERIMENTAL*: When using a custom component, it defines the attribute name for intetrpolation options, defaults `'data-i18n'` */
     dataAttribute?: string;
 }
 
+/**
+ * Events emitted by i18n-babel
+ */
 export enum Ei18nEvents {
+    /** Emitted when translator is ready to be initialized */
     translatorReady = 'i18n-babel-ready',
+    /** Raixed when new translations are available, either because new language has been selected
+     * or because remote download has finished */
     updateTranslations = 'i18n-babel-update-translations',
+    /** Event emitted when missing (empty) translation is found
+     * - `ev.detail` contains original text
+     * *Only emitted when `isShowMissing` is set to `true`* */
     missingTranslation = 'i18n-babel-missing-translation',
+    /** Event emitted when new translation is found
+     * - `ev.detail` contains original text
+     * *Only emitted when `isShowMissing` is set to `true`* */
     newTranslation = 'i18n-babel-new-translation',
 }
 
