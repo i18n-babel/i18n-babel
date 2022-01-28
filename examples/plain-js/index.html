@@ -12,7 +12,7 @@
         <i18n-babel>The title of the page</i18n-babel>
     </h1>
 
-    <label for="lang" id="langLabel" data-i18n>Select language (current: (% current %), guessed: (% guessed %)):</label>
+    <i18n-babel for="lang" id="langLabel" data-i18n>Select language (current: (% current %), guessed: (% guessed %)):</i18n-babel>
     <select id="langSelect" name="lang" onchange="setLanguage()">
         <option value="" id="defaultLang" data-i18n='{"defaultLang": "unknown"}'>Default ((% defaultLang %))</option>
         <option value="ca" data-i18n>Catalan</option>
@@ -59,15 +59,19 @@
                 isLocalValuesAllowed: true,
                 isShowMissing: true,
                 availableLangs: ['ca', 'en'],
+                isEnableAttr: true,
             });
             // We call `guessLanguage(true)` so it ignores cookie setting
-            langLabel.setAttribute('data-i18n', `{ "current": "${Translator.getCurrentLanguage()}", "guessed": "${Translator.guessLanguage(true)}" }`);
+            langLabel.setAttribute('data-i18n', JSON.stringify({
+                current: Translator.getCurrentLanguage(),
+                guessed: Translator.guessLanguage(true)
+            }));
             defaultLang.setAttribute('data-i18n', `{ "defaultLang": "${Translator.getDefaultLanguage()}" }`);
             codeTranslated.innerHTML = await Translator.t('We like random numbers: (% random %) (This text is translated programatically using <code>Translator.t</code> function)', { random: Math.random() });
         }
 
         // Optionally wait for Translator to be available
-        // If the script is placed before this script, it's not necessary to wait
+        // If the i18n-babel script is placed before this script, it's not necessary to wait
         document.addEventListener('i18n-babel-ready', load);
 
         let clicks = 0;

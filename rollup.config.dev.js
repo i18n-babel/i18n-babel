@@ -35,10 +35,12 @@ export default {
                 {
                     src: 'examples/plain-js/index.html',
                     dest: 'dist',
-                    transform: (content) => content.toString().replace(/https:\/\/unpkg.com\/i18n-babel\/dist/ig, ''),
+                    transform: (content) => content.toString()
+                        .replace(/https:\/\/unpkg.com\/i18n-babel\/dist/ig, '')
+                        .replace(/assetsLocation: '.*'/ig, 'assetsLocation: \'\''),
                 },
             ]
         }),
         serve('dist'),
-    ]
+    ],
 };
