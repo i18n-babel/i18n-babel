@@ -11,8 +11,14 @@ const TAG_I18N_TRANSLATIONS = '__i18n-babel-data';
  * @param lang idioma de las traducciones
  * @param version versión de las traducciones
  */
-function getTag(lang: string, version?: number) {
-    return `${TAG_I18N_TRANSLATIONS}_${lang}_${version || ''}`;
+function getTag(lang: string, version = 0) {
+    return `${TAG_I18N_TRANSLATIONS}_${lang}_${version > -2 ? version : ''}`;
+}
+
+function removeStorageT(lang: string): void {
+    Object.keys(localStorage)
+        .filter(key => key.includes(getTag(lang, -2)))
+        .map(key => localStorage.removeItem(key));
 }
 
 export function getStorageT(lang: string, version: number): TypeTData | Record<string, never> {
@@ -26,13 +32,9 @@ export function getStorageT(lang: string, version: number): TypeTData | Record<s
 }
 
 export function setStorageT(lang: string, version: number, translations: TypeTData): void {
+    // Elimina la `${TAG_I18N_TRANSLATIONS}_${lang}_${version}` para el idioma seleccionado
+    removeStorageT(lang);
     localStorage.setItem(getTag(lang, version), JSON.stringify(translations));
-}
-
-export function removeStorageT(lang: string): void {
-    Object.keys(localStorage)
-        .filter(key => key.includes(getTag(lang)))
-        .map(key => localStorage.removeItem(key));
 }
 
 export function clearLocalStorage() {

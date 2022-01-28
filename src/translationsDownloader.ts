@@ -1,5 +1,5 @@
 import { generateToken } from './auth';
-import { getStorageT, getStorageVersion, removeStorageT, setStorageT } from './storage';
+import { getStorageT, getStorageVersion, setStorageT } from './storage';
 import { Ei18nEvents, ITranslatorOptions, TypeTData } from './types';
 import { raiseEvent, TypeTranslationsData } from './utils';
 
@@ -20,6 +20,7 @@ export class TranslationsDownloader {
         'Access-Control-Allow-Origin': location.origin, // eslint-disable-line no-restricted-globals
         'x-translate-i18n': 'js',
     };
+    localTranslationsRequest: { [key: string]: Promise<TypeTData> } = {};
 
     constructor(options: ITranslatorOptions) {
         this.opts = options;
@@ -55,7 +56,7 @@ export class TranslationsDownloader {
         }
 
         // - Obtememos las traducciones locales
-        const translations = await this.getLocalTranslations(lang);
+        const translations = await this.getLocalTranslationsOnce(lang);
         const availableLangs = defaultAvailableLangs;
         this.translationsCache[lang] = translations;
         this.availableLangsCache = availableLangs;
@@ -132,7 +133,7 @@ export class TranslationsDownloader {
         const locVersion = parseFloat(locVersionStr);
         if (!vResponse.ok || locVersion < 0 || locVersion === storageVersion) {
             // No hay respuesta del servidor o ya tenemos la ultima locVersion en localstorage
-            return this.getLocalTranslations(lang);
+            return this.getLocalTranslationsOnce(lang);
         }
 
         // hay una nueva version en el servidor => la descargamos
@@ -148,8 +149,6 @@ export class TranslationsDownloader {
         });
 
         if (locResponse.ok) {
-            // Elimina la `${TAG_I18N_TRANSLATIONS}_${lang}_${version}` para el idioma seleccionado
-            removeStorageT(lang);
             const translations: TypeTData = this.process(await locResponse.json());
             setStorageT(lang, locVersion, translations);
             return translations;
@@ -163,13 +162,23 @@ export class TranslationsDownloader {
      * @param isLocalValuesAllowed local values allowed => save to localStorage
      * @returns tranlsations in localstorage or in assets
      */
-    async getLocalTranslations(lang: string): Promise<TypeTData> {
+    getLocalTranslationsOnce(lang: string): Promise<TypeTData> {
         // Prevent asking again and again
         const langKey = lang || '--';
         if (this.localTranslations[langKey] !== undefined) {
-            return this.localTranslations[langKey];
+            return Promise.resolve(this.localTranslations[langKey]);
         }
 
+        // We save a refference to the promise, so it will be called only once
+        if (!this.localTranslationsRequest[langKey]) {
+            this.localTranslationsRequest[langKey] = this.getLocalTranslations(lang);
+        }
+
+        return this.localTranslationsRequest[langKey];
+    }
+
+    async getLocalTranslations(lang: string): Promise<TypeTData> {
+        const langKey = lang || '--';
         const version = await this.getAssetsVersion(lang);
         const storageVersion: number = getStorageVersion(lang, '-1');
         let storageTranslations = getStorageT(lang, storageVersion);
@@ -186,12 +195,13 @@ export class TranslationsDownloader {
                 }
             } else if (lang !== '') {
                 // No existen valores para este idioma, leer los valores por defecto
-                return this.getLocalTranslations('');
+                return this.getLocalTranslationsOnce('');
             }
         }
 
         // Save assetsTranslations, wait here to save, so we can fetch assets in all calls
         this.localTranslations[langKey] = storageTranslations;
+        delete this.localTranslationsRequest[langKey];
         return this.localTranslations[langKey];
     }
 
