@@ -206,7 +206,7 @@ export class TranslationsDownloader {
                     // React returns 200 OK with main page when resource does not exist
                     versionJson = await assetsVersion.json();
                 } catch { } // eslint-disable-line no-empty
-                const versionStr = versionJson[`version_${lang}`] || '0';
+                const versionStr = versionJson[lang || '--'] || '0';
                 this.localVersion = parseFloat(versionStr);
             }
         }
