@@ -28,7 +28,7 @@ Move your application to the next level: the premium translations service. With 
 
 # Local values and Cookie Policies
 
-This library uses cookie `lang` which must be opted in setting `isLocalValuesAllowed: true` on initialization.
+This library uses cookie `lang` which must be opted in by setting `isLocalValuesAllowed: true` on initialization.
 It also uses localstorage to keep the last version of the translation of each language in local storage. It must be opted in in the same way as cookie.
 
 # Index
@@ -155,7 +155,9 @@ This is the easiest and recommended way to translate. It is only required to ini
 <i18n-babel>Translate me!</i18n-babel>
 <script>
     // Texts will be translated once Translator is initialized
-    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true }));
+    document.addEventListener(
+        'i18n-babel-ready',
+        () => Translator.init({ isLocalValuesAllowed: true }));
 </script>
 ```
 
@@ -165,7 +167,9 @@ It also supports dynamic interpolation via `data-i18n` attribute:
 <i18n-babel data-i18n='{"name": "i18n-babel"}'>Hello (% name %)</i18n-babel>
 <script>
     // Texts will be translated once Translator is initialized
-    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true }));
+    document.addEventListener(
+        'i18n-babel-ready',
+        () => Translator.init({ isLocalValuesAllowed: true }));
 </script>
 ```
 
@@ -186,10 +190,15 @@ For this reason it is easier to place the text inside single quotes. It can also
     greet.setAttribute('data-i18n', JSON.stringify({ name: 'world' }));
 
     // Wait for initialization
-    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true }));
+    document.addEventListener(
+        'i18n-babel-ready',
+        () => Translator.init({ isLocalValuesAllowed: true }));
 
     // Change the text later on
-    setTimeout(() => greet.setAttribute('data-i18n', JSON.stringify({ name: 'universe' })), 1000);
+    setTimeout(() => {
+        const attr = JSON.stringify({ name: 'universe' });
+        greet.setAttribute('data-i18n', attr);
+    }, 1000);
 </script>
 ```
 
@@ -204,7 +213,9 @@ The second method to translate texts is on javascript / typescript:
     const mainTitle = document.getElementById('main-title');
     async function load() {
         Translator.init({ isLocalValuesAllowed: true });
-        codeTranslated.innerHTML = await Translator.t('We like random numbers: (% random %)', { random: Math.random() });
+        const text = 'We like random numbers: (% random %)';
+        const params = { random: Math.random() };
+        codeTranslated.innerHTML = await Translator.t(text, params);
     }
     document.addEventListener('i18n-babel-ready', load);
 </script>
@@ -220,7 +231,10 @@ The last available method is with `data-i18n` attribute. It is **disabled** by d
 <p data-i18n>Translate me!</p>
 <script>
     // Texts will be translated once Translator is initialized
-    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true, isEnableAttr: true }));
+    document.addEventListener('i18n-babel-ready', () => Translator.init({
+        isLocalValuesAllowed: true,
+        isEnableAttr: true,
+    }));
 </script>
 ```
 
@@ -230,7 +244,10 @@ It also supports dynamic interpolation via `data-i18n` attribute:
 <p data-i18n='{"name": "i18n-babel"}'>Hello (% name %)</p>
 <script>
     // Texts will be translated once Translator is initialized
-    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true, isEnableAttr: true }));
+    document.addEventListener('i18n-babel-ready', () => Translator.init({
+        isLocalValuesAllowed: true,
+        isEnableAttr: true,
+    }));
 </script>
 ```
 
@@ -251,7 +268,11 @@ See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/
 
 <body>
     <h1 data-i18n>Translate texts with attribute <code>data-i18n</code></h1>
-    <p><i18n-babel i18n-babel='{"name": "i18n Babel!", "url": "https://i18n-babel.com"}'>Visit us: <a href="(%url)">(%name)</a></i18n-babel></p>
+    <p>
+        <i18n-babel i18n-babel='{"name": "i18n Babel!", "url": "https://i18n-babel.com"}'>
+            Visit us: <a href="(%url)">(%name)</a>
+        </i18n-babel>
+    </p>
 
     <script>
         Translator.init({ isLocalValuesAllowed: true });
@@ -303,7 +324,13 @@ export class AppHome {
             url: 'https://i18n-babel.com',
             name: 'i18n Babel!',
         };
-        return <p><i18n-babel data-i18n={JSON.stringify(tData)}>Visit us: <a href="(%url)">(%name)</a></i18n-babel></p>;
+        return (
+            <p>
+                <i18n-babel data-i18n={JSON.stringify(tData)}>
+                    Visit us: <a href="(%url)">(%name)</a>
+                </i18n-babel>
+            </p>
+        );
     }
 }
 ```
@@ -323,7 +350,9 @@ export class AppHome {
 ### Example:
 
 ```ts
-document.addEventListener('i18n-babel-missing-translation', ev => console.log('Missing translation for:', ev.detail));
+document.addEventListener('i18n-babel-missing-translation', ev => {
+    console.log('Missing translation for:', ev.detail);
+});
 ```
 
 ## Translator
