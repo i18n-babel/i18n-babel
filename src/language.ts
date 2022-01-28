@@ -57,7 +57,8 @@ export class Language {
             lang = this.opts.userLanguage
                 || (window as any).navigator.userLanguage
                 || window.navigator.language
-                || this.opts.defaultLanguage;
+                || this.opts.defaultLanguage
+                || 'en';
             lang = this.getLangFromDialect(lang);
             if (resetCookie) {
                 this.manageCookie(lang);
