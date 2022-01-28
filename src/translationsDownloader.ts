@@ -102,7 +102,7 @@ export class TranslationsDownloader {
     }
 
     async getRemoteAvailableLangs(defaultAvailable: string[]) {
-        const authQs: string = await this.createAuthQs(this.opts.appId, this.opts.appSecret);
+        const authQs: string = await this.createAuthQs(this.opts.appId, this.opts.appToken);
         const availableUrl = `${this.opts.apiUrl}/lang?${authQs}`;
         const resp = await fetch(availableUrl, {
             method: 'GET',
@@ -119,9 +119,9 @@ export class TranslationsDownloader {
     }
 
     async getRemoteTranslations(lang: string) {
-        const authQs: string = await this.createAuthQs(this.opts.appId, this.opts.appSecret);
+        const authQs: string = await this.createAuthQs(this.opts.appId, this.opts.appToken);
         const storageVersion: number = getStorageVersion(lang);
-        const vUrl = `${this.opts.apiUrl}/lang/loc-version?lang=${lang}&${authQs}`;
+        const vUrl = `${this.opts.apiUrl}/lang/version?lang=${lang}&${authQs}`;
         // gestion de la version
         const vResponse = await fetch(vUrl, {
             method: 'GET',
@@ -254,10 +254,10 @@ export class TranslationsDownloader {
         return translations;
     }
 
-    private async createAuthQs(appId: string, appSecret: string): Promise<string> {
-        if (appId && appSecret) {
+    private async createAuthQs(appId: string, appToken: string): Promise<string> {
+        if (appId && appToken) {
             const nonce = new Date().getTime();
-            const token = await generateToken(`${appSecret}-${nonce}`);
+            const token = await generateToken(`${appToken}-${nonce}`);
             return `appId=${encodeURIComponent(appId)}&token=${encodeURIComponent(token)}&timestamp=${nonce}`;
         }
         return '';
@@ -311,7 +311,7 @@ export class TranslationsDownloader {
                 this.missingsInterval[translationID] = setInterval(
                     async () => {
                         try {
-                            const authQs = await this.createAuthQs(this.opts.appId, this.opts.appSecret);
+                            const authQs = await this.createAuthQs(this.opts.appId, this.opts.appToken);
                             const data = {
                                 lang,
                                 tag: this.opts.missingTag,

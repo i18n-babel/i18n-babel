@@ -6,6 +6,7 @@
 i18n-babel is the most powerful translations manager for javascript applications on the web.
 
 - Easy to integrate: min to no effort
+- Automatically detect strings
 - No external dependencies: only javascript and html :)
 - Blazing fast: it is a web component
 - Works with any framework (React, Angular, Stencil, ... even with plain Javascript)
@@ -129,7 +130,7 @@ See below in API section, all availabe options. When initialized, the library wi
 4. Check if there is a newer version for the selected language in `assets/i18n/versions.json` (or wherever specified on init options)
 5. When a new version in `assets/i18n` is detected, refresh localstorage
 
-If `apiUrl`, `appId` and `appSecret` have been provided (they can be obtained on blablatec.com):
+If `apiUrl`, `appId` and `appToken` have been provided (they can be obtained on blablatec.com):
 
 6. Start a background process to check if there is a newer version for the translations
 7. In case a new version for language detected, download new version and refresh localstorage
@@ -275,7 +276,10 @@ See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/
     </p>
 
     <script>
-        Translator.init({ isLocalValuesAllowed: true });
+        Translator.init({
+            isLocalValuesAllowed: true,
+            isEnableAttr: true,
+        });
     </script>
 </body>
 
@@ -301,7 +305,10 @@ const envConfig: IEnvironmentConfig = {
 };
 
 export default () => {
-    Translator.init({ isLocalValuesAllowed: true });
+    Translator.init({
+        isLocalValuesAllowed: true,
+        isEnableAttr: true,
+    });
 };
 ```
 
@@ -360,25 +367,44 @@ document.addEventListener('i18n-babel-missing-translation', ev => {
 Translator is the main object. It is a [singleton class](https://en.wikipedia.org/wiki/Singleton_pattern) and thus it cannot be instantiated. Use `Translator.init(options)` to initialize translations. It also supports `getInstance()` to get an instance to the object at any time of lifecycle.
 All public methods of `Translator` can be used as static or instance method.
 
-### `init(options: ITranslatorOptions) => Translator`
+### `init(options?: ITranslatorOptions) => Translator`
 
-Initializes the translator object. Must be called before using i18n-babel. When called after a previous call, it will overwrite the singleton object with the new options.
+Initializes the translator object. It is recommended to call `init` function before using i18n-babel (`getCurrentLanguage`, `setLanguage`, `t`, etc).
 
-- `options`: initialization options
+When called second or later, it will overwrite the singleton object with the new options.
+
+- `options`: optional initialization configuration (see options below)
 - **returns**: an instance to the `Translator` object
 
 ```js
 const translator = Translator.init({
-    availableLangs: ['en', 'ca'],
+    isLocalValuesAllowed: true, // allow cookie `langp` and saving to localstorage
+    apiUrl: `https://blablatec.com/api/v1/application/5f7...`, // api entry point
+    appId: 'your-app-id...', // app id
+    appToken: 't8GTsNsd...', // app token
+    isEnableAttr: true, // allow `<p data-i18n>` style translations
+    missingTag: 'app', // all new detected strings will be tagged as app when sent to server
+    tags: ['app'], // download only app tagged strings
+});
+```
+
+If any function from `Translator` is used before calling `init`, `Translator` will automatically be initialized with following values. Those are also the default values when called `init` with no options:
+
+```js
+const translator = Translator.init({
+    availableLangs: ['en'],
     defaultLanguage: 'en',
-    userLanguage: 'ca',
-    isShowMissing: true,
-    isLocalValuesAllowed: true,
-    apiUrl: `https://i18n-babel.com/api/v1/application/5f7...`,
-    appId: 'an-app-id',
-    appSecret: 't8GTsNsd...',
-    missingTag: 'app',
+    userLanguage: null,
+    isShowMissing: false,
+    isLocalValuesAllowed: false,
+    isEnableAttr: false,
     tags: [],
+    missingTag: 'app',
+    assetsLocation: 'assets/i18n',
+    fileNames: {},
+    apiUrl: null,
+    appId: null,
+    appToken: null,
 });
 ```
 
@@ -386,30 +412,29 @@ It accepts an ITranslatorOptions options object with the following parameters:
 
 ```ts
 interface ITranslatorOptions {
-    /** Allowed languages array, if found language is not in this array, will fall back to default, defaults to ['en'] */
+    /** Allowed languages array, if found language is not in this array, will fall back to default, defaults `['en']` */
     availableLangs?: string[];
-    /** The default language to select when the selected one is not found in availableLangs, defaults to 'en' */
+    /** The default language to select when the selected one is not found in availableLangs, defaults `'en'` */
     defaultLanguage?: string;
-    /** Will take precedence over navigator language, defaults to 'en' */
+    /** Will take precedence over navigator language, defaults `'null'` */
     userLanguage?: string;
-    /** Show missing translations in console, defaults to false */
+    /** Show missing translations in console, defaults `false` */
     isShowMissing?: boolean;
-    /** Allow the use of cookie `lang` to save the language and localstorage to save translations and versions, defaults to false */
+    /** Allow the use of cookie `lang` to save the language and localstorage to save translations and versions, defaults `false` */
     isLocalValuesAllowed?: boolean;
-    /** Api url to get remote updates, defailts to null */
-    apiUrl?: string;
-    /** App id to get remote updates, defailts to null */
-    appId?: string;
-    /** App secret to get remote updates, defailts to null */
-    appSecret?: string;
-    /** The tag that will be sent to server when missing string is found, defaults to 'app' */
-    missingTag?: string;
-    /** The tags to filter strings on server side, defaults [] */
+    /**
+     * Enables attribute translations. This is less performant than tag option because it has to traverse and observe all DOM
+     * to be reactive to changes. Defaults `false`
+     */
+    isEnableAttr?: boolean;
+    /** The tags to filter strings when downloading translations, defaults `[]` */
     tags?: string[];
-    /** Path to the location of assets files, defaults 'assets/i18n' */
+    /** The tag that will be sent to server when missing string is found, defaults `'app'` */
+    missingTag?: string;
+    /** Path to the location of assets files, defaults `'assets/i18n'` */
     assetsLocation?: string;
     /**
-     * Names of the translations and version files. Define it as:
+     * Names of the translations and version files. Examples of use:
      * ```
      * { "--": "filename1.json", "ca": "filename2.json", "en": "filename3.json", ..., "versions": "filename.json" }
      * ```
@@ -419,6 +444,12 @@ interface ITranslatorOptions {
      * ```
      */
     fileNames?: { [key: string]: string };
+    /** Api url to get remote updates from blablatec.com, defaults `null` */
+    apiUrl?: string;
+    /** App id to get remote updates from blablatec.com, defaults `null` */
+    appId?: string;
+    /** App token to get remote updates from blablatec.com, defaults `null` */
+    appToken?: string;
 }
 ```
 
@@ -539,7 +570,7 @@ Contains an array with all new translations found. Only available when `isShowMi
 The backend API must implement the following routes:
 
 - **GET** `${apiUrl}/lang`: return an array with available languages
-- **GET** `${apiUrl}/lang/loc-version?lang=${lang}`: return a float number with the version of the requested language
+- **GET** `${apiUrl}/lang/version?lang=${lang}`: return a float number with the version of the requested language
 - **GET** `${apiUrl}/locale/all.json?lang=${lang}&tags=app,server`: return a json with the translations for the language
     - lang: the language in format `'en'`
     - tags: optional coma separated tags

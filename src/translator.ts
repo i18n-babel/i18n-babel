@@ -15,21 +15,6 @@ declare global {
 
 window.newTranslations = window.newTranslations || {};
 
-const defaultOptions: ITranslatorOptions = {
-    availableLangs: ['en'],
-    defaultLanguage: 'en',
-    isShowMissing: false,
-    isLocalValuesAllowed: false,
-    userLanguage: null,
-    missingTag: 'app',
-    tags: [],
-    assetsLocation: 'assets/i18n',
-    fileNames: {},
-    isEnableAttr: false,
-    tagName: 'i18n-babel',
-    dataAttribute: 'data-i18n',
-};
-
 /**
  * Translator is the main entry point for i18n-babel.
  * It can be used to initialize the i18n-babel system.
@@ -41,6 +26,24 @@ export class Translator {
     private language: Language;
     private opts: ITranslatorOptions;
     private availableLangs: string[];
+    private observers: MutationObserver[] = [];
+    private static defaultOptions: ITranslatorOptions = {
+        availableLangs: ['en'],
+        defaultLanguage: 'en',
+        userLanguage: null,
+        isShowMissing: false,
+        isLocalValuesAllowed: false,
+        isEnableAttr: false,
+        tags: [],
+        missingTag: 'app',
+        assetsLocation: 'assets/i18n',
+        fileNames: {},
+        apiUrl: null,
+        appId: null,
+        appToken: null,
+        tagName: 'i18n-babel',
+        dataAttribute: 'data-i18n',
+    };
 
     private constructor(options: ITranslatorOptions) {
         if (Translator.isInitialized()) {
@@ -61,10 +64,7 @@ export class Translator {
             I18nBabelWebcomponent.dataAttribute = this.opts.dataAttribute;
             customElements.define(this.opts.tagName, I18nBabelWebcomponent);
         }
-        if (this.opts.isEnableAttr) {
-            this.processDataAttributes(document);
-            this.startDOMObserver(document);
-        }
+        this.refreshMutationObservers();
     }
 
     /**
@@ -100,25 +100,31 @@ export class Translator {
         let { instance } = Translator;
         if (instance) {
             // Cambia los parametros de inicializacion
-            // TODO: cambiar la definición de tagName y attributeName
-            const isProcessDOMObserver = !instance.opts.isEnableAttr && options.isEnableAttr;
-            instance.opts = { ...defaultOptions, ...options };
+            const isRefreshObservers = !instance.opts.isEnableAttr && options.isEnableAttr;
+            instance.opts = { ...Translator.defaultOptions, ...options };
             instance.availableLangs = instance.opts.availableLangs;
             instance.language.changeOptions(instance.opts);
             instance.tDonwloader.changeOptions(instance.opts);
 
-            if (isProcessDOMObserver) {
-                instance.processDataAttributes(document);
-                instance.startDOMObserver(document);
+            if (isRefreshObservers) {
+                instance.refreshMutationObservers();
             }
             return instance;
         }
 
-        instance = new Translator({ ...defaultOptions, ...options });
+        instance = new Translator({ ...Translator.defaultOptions, ...options });
         Translator.instance = instance;
         // This has been done to avoid dependency cycle
         TManager.init(instance.t.bind(instance));
         return instance;
+    }
+
+    private refreshMutationObservers() {
+        this.disconnectObservers();
+        if (this.opts.isEnableAttr) {
+            this.processDataAttributes(document);
+            this.startDOMObserver(document);
+        }
     }
 
     /**
@@ -156,6 +162,12 @@ export class Translator {
             subtree: true,
             characterData: true,
         });
+        this.observers.push(observer);
+    }
+
+    private disconnectObservers() {
+        this.observers.forEach(o => o.disconnect());
+        this.observers = [];
     }
 
     static setLocalValuesAllowed(isLocalValuesAllowed = false) {
@@ -367,4 +379,14 @@ export class Translator {
     }
 }
 
-window.addEventListener('load', () => raiseEvent(Ei18nEvents.translatorReady));
+window.addEventListener('load', () => {
+    if (typeof I18nBabelWebcomponent === 'function'
+        && /^\s*class\s+/.test(I18nBabelWebcomponent.toString())
+        && !customElements.get('i18n-babel')
+    ) {
+        // Register custom component
+        I18nBabelWebcomponent.dataAttribute = 'data-i18n';
+        customElements.define('i18n-babel', I18nBabelWebcomponent);
+    }
+    raiseEvent(Ei18nEvents.translatorReady);
+});
