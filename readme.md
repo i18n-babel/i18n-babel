@@ -24,17 +24,55 @@ From the creators of ***i18n-babel***: translations as a service - [blablatec.co
 
 Move your application to the next level: the premium translations service. With [blablatec.com](blablatec.com) you can focus on what you do best: add value to your application, surrounding with valuable partners.
 
-[Blablatec.com](blablatec.com) helps you to manage the translations with an easy and intuitive system.
+[Blablatec.com](blablatec.com) helps you to manage the translations with an easy and intuitive interface and keep the texts of your application always up to date.
 
 # Local values and Cookie Policies
 
 This library uses cookie `lang` which must be opted in setting `isLocalValuesAllowed: true` on initialization.
 It also uses localstorage to keep the last version of the translation of each language in local storage. It must be opted in in the same way as cookie.
 
-# Configuration
+# Index
 
-Place the translations at `assets/i18n/all.json`.
-For every language, create an `all-${langCode}.json` where langCode is the 2 letters code for the language. Also create the default `all.json`:
+- i18n-babel
+- Gold sponsors
+- Local values and Cookie Policies
+- Index
+- How it works
+    - Configuration
+    - Initialization
+    - Modes
+        * Tag name
+        * Code
+        * Attribute
+- Quick examples
+    - Example of use with plain Javascript
+    - Example of use with stencil.js app
+        * Install
+        * Usage
+- API
+    - Events
+        * Example
+    - Translator
+        * `init(options: ITranslatorOptions) => Translator`
+        * `getInstance() => Translator`
+        * `setLocalValuesAllowed(isLocalValuesAllowed = false) => void`
+        * `t(originalText: string, tData?: TypeTData, lang?: string) => Promise<string>`
+        * `guessLanguage(isSkipCookie = false, resetCookie = false) => string`
+        * `getDefaultLanguage() => string`
+        * `getCurrentLanguage() => string`
+        * `setLanguage(lang) => boolean`
+        * `cacheClear() => void`
+        * `window.newTranslations => { [key: string]: string }`
+- Backend API
+- License
+
+# How it works
+
+## Configuration
+
+The `i18n-babel` library needs translations in order to translate the texts :)
+On local environment, translations files can be located at `assets/i18n/all.json`. This can be customized at initialization time.
+For every language, create an `assets/i18n/all-${langCode}.json` where langCode is the 2 letters code for the language. Also create the default `all.json`:
 - `all.json`
 - `all-en.json`
 - `all-ca.json`
@@ -48,7 +86,7 @@ type TypeTData = {
 };
 ```
 
-An example file could be:
+An example file would be:
 
 ```json
 {
@@ -57,6 +95,143 @@ An example file could be:
     "translation (% interpolated %)": "(% interpolated %) translation",
     "translation interpolated object (% interp.someKey %)": "(% interp.someKey %) interpolated"
 }
+```
+
+It is also possible to specify the version of the translations for each language with a file named `assets/i18n/versions.json`. Note that during a new release, texts in localstorage will take precedence over texts in files, so versioning is important to keep translations updated. Default language is specified with `'--'`:
+
+```json
+{
+    "--": 4,
+    "ca": 10,
+    "en": 6,
+    "es": 3
+}
+```
+
+## Initialization
+
+The library must be initialized in order to start translating. Please **NOTE** that no translations will be applied until the library is initialized. The event `i18n-babel-ready` will be launched when the `window.onload` event occurs and the `Translator` component is ready to be used:
+
+```js
+document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true }));
+```
+
+See below in API section, all availabe options. When initialized, the library will do some things:
+
+1. Detect the language in this order of precedence:
+    - Cookie `lang` when present
+    - Init `options.userLanguage` when present
+    - `window.navigator.userLanguage`
+    - `window.navigator.language`
+    - `opts.defaultLanguage`, which defaults to `en`
+2. Check if there are available translations in localstorage
+3. Get the version of the localstorage translations
+4. Check if there is a newer version for the selected language in `assets/i18n/versions.json` (or wherever specified on init options)
+5. When a new version in `assets/i18n` is detected, refresh localstorage
+
+If `apiUrl`, `appId` and `appSecret` have been provided (they can be obtained on blablatec.com):
+
+6. Start a background process to check if there is a newer version for the translations
+7. In case a new version for language detected, download new version and refresh localstorage
+
+**WARNING** Localstorage must be enabled with `isLocalValuesAllowed: true` option. When not enabled, the process will skip checking and continue on. This will make the translations to be download every time the application loads.
+
+Every time the language changes, the process will be started again.
+
+## Modes
+
+`i18n-babel` is available in 3 different modes:
+
+- [*Enabled  by default*] Tag Name: `<i18n-babel>Translate me!</i18n-babel>`
+- [*Enabled  by default*] Javascript: `await Translator.t('Translate me')`
+- [*Disabled by default*] Attribute: `<span data-i18n>Translate me!</span>`
+
+**NOTE**: `i18n-babel` library comes with `tag name` and `javascript` momdes enabled by default and attribute mode disabled. Although attribute mode seems the cleanest way to use the library, it requires to monitor changes on then entire DOM and shadow DOM's too. Even though it is been carried on in a very performant way, depending on the size of the page can have an imapct on performance on very large sites.
+
+### Tag name
+This is the easiest and recommended way to translate. It is only required to initialize the library and to place every text inside `i18n-babel` tag:
+
+```html
+<i18n-babel>Translate me!</i18n-babel>
+<script>
+    // Texts will be translated once Translator is initialized
+    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true }));
+</script>
+```
+
+It also supports dynamic interpolation via `data-i18n` attribute:
+
+```html
+<i18n-babel data-i18n='{"name": "i18n-babel"}'>Hello (% name %)</i18n-babel>
+<script>
+    // Texts will be translated once Translator is initialized
+    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true }));
+</script>
+```
+
+The changes on the attribute `data-i18n` are immediately applied to the text. Please note that the `data-i18n` attribute only supports a well formatted JSON string: the keys must be always double quoted and string values must be double quotted too:
+
+```json
+{"name": "i18n-babel", "number": 12.8}
+```
+
+For this reason it is easier to place the text inside single quotes. It can also be modified via code:
+
+```html
+<i18n-babel id="greet">Hello (% name %)</i18n-babel>
+
+<script>
+    const greet = document.getElementById('greet');
+    // Setup can be done before initialization occurs
+    greet.setAttribute('data-i18n', JSON.stringify({ name: 'world' }));
+
+    // Wait for initialization
+    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true }));
+
+    // Change the text later on
+    setTimeout(() => greet.setAttribute('data-i18n', JSON.stringify({ name: 'universe' })), 1000);
+</script>
+```
+
+### Code
+
+The second method to translate texts is on javascript / typescript:
+
+```html
+<h1><i18n-babel id="main-title" /></h1>
+
+<script>
+    const mainTitle = document.getElementById('main-title');
+    async function load() {
+        Translator.init({ isLocalValuesAllowed: true });
+        codeTranslated.innerHTML = await Translator.t('We like random numbers: (% random %)', { random: Math.random() });
+    }
+    document.addEventListener('i18n-babel-ready', load);
+</script>
+```
+
+**NOTE**: `Translator.init` function must be called before any other one. Otherwise `Translator` will initialize itself with default values (see below in API section).
+
+### Attribute
+
+The last available method is with `data-i18n` attribute. It is **disabled** by default because it wakes up a process to scan and watch changes to the whole DOM and shadow DOM's:
+
+```html
+<p data-i18n>Translate me!</p>
+<script>
+    // Texts will be translated once Translator is initialized
+    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true, isEnableAttr: true }));
+</script>
+```
+
+It also supports dynamic interpolation via `data-i18n` attribute:
+
+```html
+<p data-i18n='{"name": "i18n-babel"}'>Hello (% name %)</p>
+<script>
+    // Texts will be translated once Translator is initialized
+    document.addEventListener('i18n-babel-ready', () => Translator.init({ isLocalValuesAllowed: true, isEnableAttr: true }));
+</script>
 ```
 
 # Quick examples
