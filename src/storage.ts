@@ -49,7 +49,7 @@ export function clearLocalStorage() {
  * @param lang El idioma para el que se quieren las traducciones
  */
 export function getStorageVersion(lang: string, defaultVersion = '-1'): number {
-    const key = Object.keys(localStorage).find((k: string) => k.includes(getTag(lang)));
+    const key = Object.keys(localStorage).find((k: string) => k.includes(getTag(lang, -2)));
     const version = key ? key.split('_').pop() : defaultVersion;
     return parseFloat(version);
 }
