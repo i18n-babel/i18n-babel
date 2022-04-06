@@ -569,6 +569,21 @@ Translator.cacheClear();
 
 Contains an array with all new translations found. Only available when `isShowMissing` is set to `true`.
 
+# Backend API
+
+The backend API must implement the following routes:
+
+- **GET** `${apiUrl}/lang`: return an array with available languages
+- **GET** `${apiUrl}/lang/version?lang=${lang}`: return a float number with the version of the requested language
+- **GET** `${apiUrl}/locale/all.json?lang=${lang}&tags=app,server`: return a json with the translations for the language
+    - lang: the language in format `'en'`
+    - tags: optional coma separated tags
+- **POST** `${apiUrl}/locale/missing`: saves missing string, body contains the data for the missing string:
+    - lang: the language of the translation,
+    - tag: the tag for this translation, in order to filter translations ing GET `all.json`
+    - text: the missing translation
+    - extra: (window as any).location.href
+
 # License
 
 MIT
