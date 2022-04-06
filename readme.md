@@ -6,7 +6,7 @@
 i18n-babel is the most powerful translations manager for javascript applications on the web.
 
 - Easy to integrate: min to no effort
-- Automatically detect strings
+- Automatically detects new strings
 - No external dependencies: only javascript and html :)
 - Blazing fast: it is a web component
 - Works with any framework (React, Angular, Stencil, ... even with plain Javascript)
@@ -21,11 +21,11 @@ i18n-babel is the most powerful translations manager for javascript applications
 
 # Gold sponsors
 
-From the creators of ***i18n-babel***: translations as a service - [blablatec.com](blablatec.com)
+From the creators of ***i18n-babel***: translations as a service - [blablatec.com](https://blablatec.com)
 
-Move your application to the next level: the premium translations service. With [blablatec.com](blablatec.com) you can focus on what you do best: add value to your application, surrounding with valuable partners.
+Move your application to the next level: the premium translations service. With [blablatec.com](https://blablatec.com) you can focus on what you do best: add value to your application, surrounding with valuable partners.
 
-[Blablatec.com](blablatec.com) helps you to manage the translations with an easy and intuitive interface and keep the texts of your application always up to date.
+[Blablatec.com](https://blablatec.com) helps you to manage the translations with an easy and intuitive interface and keep the texts of your application always up to date.
 
 # Local values and Cookie Policies
 
@@ -34,38 +34,37 @@ It also uses localstorage to keep the last version of the translation of each la
 
 # Index
 
-- i18n-babel
-- Gold sponsors
-- Local values and Cookie Policies
-- Index
-- How it works
-    - Configuration
-    - Initialization
-    - Modes
-        * Tag name
-        * Code
-        * Attribute
-- Quick examples
-    - Example of use with plain Javascript
-    - Example of use with stencil.js app
-        * Install
-        * Usage
-- API
-    - Events
-        * Example
-    - Translator
-        * `init(options: ITranslatorOptions) => Translator`
-        * `getInstance() => Translator`
-        * `setLocalValuesAllowed(isLocalValuesAllowed = false) => void`
-        * `t(originalText: string, tData?: TypeTData, lang?: string) => Promise<string>`
-        * `guessLanguage(isSkipCookie = false, resetCookie = false) => string`
-        * `getDefaultLanguage() => string`
-        * `getCurrentLanguage() => string`
-        * `setLanguage(lang) => boolean`
-        * `cacheClear() => void`
-        * `window.newTranslations => { [key: string]: string }`
-- Backend API
-- License
+- [i18n-babel](i18n-babel)
+- [Gold sponsors](Gold-sponsors)
+- [Local values and Cookie Policies](Local-values-and-Cookie-Policies)
+- [Index](Index)
+- [How it works](How-it-works)
+    - [Configuration](Configuration)
+    - [Initialization](Initialization)
+    - [Modes](Modes)
+        * [Tag name](Tag-name)
+        * [Code](Code)
+        * [Attribute](Attribute)
+- [Quick examples](Quick-examples)
+    - [Example of use with plain Javascript](Example-of-use-with-plain-Javascript)
+    - [Example of use with stencil.js app](Example-of-use-with-stenciljs-app)
+        * [Install](Install)
+        * [Usage](Usage)
+- [API](API)
+    - [Events](Events)
+        * [Example:](Example)
+    - [Translator](Translator)
+        * [`init(options?: ITranslatorOptions) => Translator`](initoptions-ITranslatorOptions--Translator)
+        * [`getInstance() => Translator`](getInstance--Translator)
+        * [`setLocalValuesAllowed(isLocalValuesAllowed = false) => void`](setLocalValuesAllowedisLocalValuesAllowed--false--void)
+        * [`t(originalText: string, tData?: TypeTData, lang?: string) => Promise<string>`](toriginalText-string-tData-TypeTData-lang-string--Promisestring)
+        * [`guessLanguage(isSkipCookie = false, resetCookie = false) => string`](guessLanguageisSkipCookie--false-resetCookie--false--string)
+        * [`getDefaultLanguage() => string`](getDefaultLanguage--string)
+        * [`getCurrentLanguage() => string`](getCurrentLanguage--string)
+        * [`setLanguage(lang) => boolean`](setLanguagelang--boolean)
+        * [`cacheClear() => void`](cacheClear--void)
+        * [`window.newTranslations => { [key: string]: string }`](windownewTranslations---key-string-string-)
+- [License](License)
 
 # How it works
 
@@ -254,7 +253,12 @@ It also supports dynamic interpolation via `data-i18n` attribute:
 
 # Quick examples
 
-See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/master/examples).
+See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/master/examples):
+- [Plain Javascript](https://github.com/i18n-babel/i18n-babel/tree/master/examples/plain-js)
+- [Stencil](https://github.com/i18n-babel/i18n-babel/tree/master/examples/stencil)
+- [React](https://github.com/i18n-babel/i18n-babel/tree/master/examples/react)
+- [Vue](https://github.com/i18n-babel/i18n-babel/tree/master/examples/vue)
+- [Angular](https://github.com/i18n-babel/i18n-babel/tree/master/examples/angular)
 
 ## Example of use with plain Javascript
 
@@ -334,7 +338,7 @@ export class AppHome {
         return (
             <p>
                 <i18n-babel data-i18n={JSON.stringify(tData)}>
-                    Visit us: <a href="(%url)">(%name)</a>
+                    Visit us: <a href="(% url %)">(% name %)</a>
                 </i18n-babel>
             </p>
         );
@@ -564,21 +568,6 @@ Translator.cacheClear();
 ### `window.newTranslations => { [key: string]: string }`
 
 Contains an array with all new translations found. Only available when `isShowMissing` is set to `true`.
-
-# Backend API
-
-The backend API must implement the following routes:
-
-- **GET** `${apiUrl}/lang`: return an array with available languages
-- **GET** `${apiUrl}/lang/version?lang=${lang}`: return a float number with the version of the requested language
-- **GET** `${apiUrl}/locale/all.json?lang=${lang}&tags=app,server`: return a json with the translations for the language
-    - lang: the language in format `'en'`
-    - tags: optional coma separated tags
-- **POST** `${apiUrl}/locale/missing`: saves missing string, body contains the data for the missing string:
-    - lang: the language of the translation,
-    - tag: the tag for this translation, in order to filter translations ing GET `all.json`
-    - text: the missing translation
-    - extra: (window as any).location.href
 
 # License
 
