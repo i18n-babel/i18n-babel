@@ -43,14 +43,19 @@ export class Translator {
         appToken: null,
         tagName: 'i18n-babel',
         dataAttribute: 'data-i18n',
+        interpolateLeft: '${',
+        interpolateRight: '}',
     };
+
+    private ilEsc: string;
+    private irEsc: string;
 
     private constructor(options: ITranslatorOptions) {
         if (Translator.isInitialized()) {
             throw new Error('Translator cannot be instantiated, please use `Translator.init()`');
         }
-        this.opts = options;
-        this.availableLangs = this.opts.availableLangs;
+        this.setupOptions(options);
+
         this.tDonwloader = new TranslationsDownloader(this.opts);
         this.language = new Language(this.opts);
         this.language.initLanguage(this.opts.availableLangs);
@@ -101,22 +106,37 @@ export class Translator {
         if (instance) {
             // Cambia los parametros de inicializacion
             const isRefreshObservers = !instance.opts.isEnableAttr && options.isEnableAttr;
-            instance.opts = { ...Translator.defaultOptions, ...options };
-            instance.availableLangs = instance.opts.availableLangs;
-            instance.language.changeOptions(instance.opts);
-            instance.tDonwloader.changeOptions(instance.opts);
-
+            instance.setupOptions(options);
             if (isRefreshObservers) {
                 instance.refreshMutationObservers();
             }
             return instance;
         }
 
-        instance = new Translator({ ...Translator.defaultOptions, ...options });
+        instance = new Translator(options);
         Translator.instance = instance;
         // This has been done to avoid dependency cycle
         TManager.init(instance.t.bind(instance));
         return instance;
+    }
+
+    private setupOptions(options: ITranslatorOptions) {
+        this.opts = { ...Translator.defaultOptions, ...options };
+        this.availableLangs = this.opts.availableLangs;
+        // const regexSpecialChars = [
+        //     '.', ',', '+', ',', '*', ',', '?', ',', '^',
+        //     ',', '$', ',', '(', ',', ')', ',', '[', ',',
+        //     ']', ',', '{', ',', '}', ',', '|', ',', '\\'];
+        // .split('').map(c => (regexSpecialChars.indexOf(c) > 0 ? `\\${c}` : c)).join('');
+        this.ilEsc = options.interpolateLeft.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        this.irEsc = options.interpolateRight.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+        if (this.language) {
+            this.language.changeOptions(this.opts);
+        }
+        if (this.tDonwloader) {
+            this.tDonwloader.changeOptions(this.opts);
+        }
     }
 
     private refreshMutationObservers() {
@@ -236,8 +256,8 @@ export class Translator {
     }
 
     /**
-    * *Función para uso interno*. Recorre las keys del JSON para comprobar si coinciden con el RegExp (p.ej) : `(%key%)`,
-    * si coinciden sustituye la palabra por el valor encontrado en el JSON (p.ej) : `(%nombre%)` por `Toni`
+    * *Función para uso interno*. Recorre las keys del JSON para comprobar si coinciden con el RegExp (p.ej) : `${key}`,
+    * si coinciden sustituye la palabra por el valor encontrado en el JSON (p.ej) : `${nombre}` por `Toni`
     * @param text Texto a interpolar
     * @param data Json que contiene los paramatros del componente (p.ej) : `{ nombre: 'Toni', edad: 25 }`
     * @returns El texto interpolado
@@ -245,14 +265,14 @@ export class Translator {
     private interpolate(text: string, data: TypeTData) {
         // TODO: support deep nesting
         let interpolated = text;
-        if (text.indexOf('(%') > -1) {
+        if (text.indexOf(this.opts.interpolateLeft) > -1) {
             Object.keys(data).forEach((tkey) => {
-                const regex = new RegExp(`\\(%\\s*${tkey}\\s*%\\)`, 'g');
+                const regex = new RegExp(`${this.ilEsc}\\s*${tkey}\\s*${this.irEsc}`, 'g');
                 interpolated = interpolated.replace(regex, `${data[tkey]}` || '');
             });
         }
         // Replace all missing data
-        interpolated = interpolated.replace(new RegExp('\\(%[^)]+%\\)', 'g'), '');
+        interpolated = interpolated.replace(new RegExp(`${this.ilEsc}.*${this.irEsc}`, 'g'), '');
         return interpolated;
     }
 

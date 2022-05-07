@@ -34,37 +34,37 @@ It also uses localstorage to keep the last version of the translation of each la
 
 # Index
 
-- [i18n-babel](i18n-babel)
-- [Gold sponsors](Gold-sponsors)
-- [Local values and Cookie Policies](Local-values-and-Cookie-Policies)
-- [Index](Index)
-- [How it works](How-it-works)
-    - [Configuration](Configuration)
-    - [Initialization](Initialization)
-    - [Modes](Modes)
-        * [Tag name](Tag-name)
-        * [Code](Code)
-        * [Attribute](Attribute)
-- [Quick examples](Quick-examples)
-    - [Example of use with plain Javascript](Example-of-use-with-plain-Javascript)
-    - [Example of use with stencil.js app](Example-of-use-with-stenciljs-app)
-        * [Install](Install)
-        * [Usage](Usage)
-- [API](API)
-    - [Events](Events)
-        * [Example:](Example)
-    - [Translator](Translator)
-        * [`init(options?: ITranslatorOptions) => Translator`](initoptions-ITranslatorOptions--Translator)
-        * [`getInstance() => Translator`](getInstance--Translator)
-        * [`setLocalValuesAllowed(isLocalValuesAllowed = false) => void`](setLocalValuesAllowedisLocalValuesAllowed--false--void)
-        * [`t(originalText: string, tData?: TypeTData, lang?: string) => Promise<string>`](toriginalText-string-tData-TypeTData-lang-string--Promisestring)
-        * [`guessLanguage(isSkipCookie = false, resetCookie = false) => string`](guessLanguageisSkipCookie--false-resetCookie--false--string)
-        * [`getDefaultLanguage() => string`](getDefaultLanguage--string)
-        * [`getCurrentLanguage() => string`](getCurrentLanguage--string)
-        * [`setLanguage(lang) => boolean`](setLanguagelang--boolean)
-        * [`cacheClear() => void`](cacheClear--void)
-        * [`window.newTranslations => { [key: string]: string }`](windownewTranslations---key-string-string-)
-- [License](License)
+- [i18n-babel](#i18n-babel)
+- [Gold sponsors](#Gold-sponsors)
+- [Local values and Cookie Policies](#Local-values-and-Cookie-Policies)
+- [Index](#Index)
+- [How it works](#How-it-works)
+    - [Configuration](#Configuration)
+    - [Initialization](#Initialization)
+    - [Modes](#Modes)
+        * [Tag name](#Tag-name)
+        * [Code](#Code)
+        * [Attribute](#Attribute)
+- [Quick examples](#Quick-examples)
+    - [Example of use with plain Javascript](#Example-of-use-with-plain-Javascript)
+    - [Example of use with stencil.js app](#Example-of-use-with-stenciljs-app)
+        * [Install](#Install)
+        * [Usage](#Usage)
+- [API](#API)
+    - [Events](#Events)
+        * [Example:]#(Example)
+    - [Translator](#Translator)
+        * [`init(options?: ITranslatorOptions) => Translator`]#(initoptions-ITranslatorOptions--Translator)
+        * [`getInstance() => Translator`]#(getInstance--Translator)
+        * [`setLocalValuesAllowed(isLocalValuesAllowed = false) => void`]#(setLocalValuesAllowedisLocalValuesAllowed--false--void)
+        * [`t(originalText: string, tData?: TypeTData, lang?: string) => Promise<string>`#](toriginalText-string-tData-TypeTData-lang-string--Promisestring)
+        * [`guessLanguage(isSkipCookie = false, resetCookie = false) => string`]#(guessLanguageisSkipCookie--false-resetCookie--false--string)
+        * [`getDefaultLanguage() => string`]#(getDefaultLanguage--string)
+        * [`getCurrentLanguage() => string`]#(getCurrentLanguage--string)
+        * [`setLanguage(lang) => boolean`]#(setLanguagelang--boolean)
+        * [`cacheClear() => void`]#(cacheClear--void)
+        * [`window.newTranslations => { [key: string]: string }`#](windownewTranslations---key-string-string-)
+- [License](#License)
 
 # How it works
 
@@ -92,8 +92,8 @@ An example file would be:
 {
     "some text that should be translated": "this is the translation",
     "[MAIN.TITLE]": "An important title",
-    "translation (% interpolated %)": "(% interpolated %) translation",
-    "translation interpolated object (% interp.someKey %)": "(% interp.someKey %) interpolated"
+    "translation ${interpolated}": "${interpolated} translation",
+    "translation interpolated object ${interp.someKey}": "${interp.someKey} interpolated"
 }
 ```
 
@@ -164,7 +164,7 @@ This is the easiest and recommended way to translate. It is only required to ini
 It also supports dynamic interpolation via `data-i18n` attribute:
 
 ```html
-<i18n-babel data-i18n='{"name": "i18n-babel"}'>Hello (% name %)</i18n-babel>
+<i18n-babel data-i18n='{"name": "i18n-babel"}'>Hello ${name}</i18n-babel>
 <script>
     // Texts will be translated once Translator is initialized
     document.addEventListener(
@@ -182,7 +182,7 @@ The changes on the attribute `data-i18n` are immediately applied to the text. Pl
 For this reason it is easier to place the text inside single quotes. It can also be modified via code:
 
 ```html
-<i18n-babel id="greet">Hello (% name %)</i18n-babel>
+<i18n-babel id="greet">Hello ${name}</i18n-babel>
 
 <script>
     const greet = document.getElementById('greet');
@@ -213,7 +213,7 @@ The second method to translate texts is on javascript / typescript:
     const mainTitle = document.getElementById('main-title');
     async function load() {
         Translator.init({ isLocalValuesAllowed: true });
-        const text = 'We like random numbers: (% random %)';
+        const text = 'We like random numbers: ${random}';
         const params = { random: Math.random() };
         codeTranslated.innerHTML = await Translator.t(text, params);
     }
@@ -241,7 +241,7 @@ The last available method is with `data-i18n` attribute. It is **disabled** by d
 It also supports dynamic interpolation via `data-i18n` attribute:
 
 ```html
-<p data-i18n='{"name": "i18n-babel"}'>Hello (% name %)</p>
+<p data-i18n='{"name": "i18n-babel"}'>Hello ${name}</p>
 <script>
     // Texts will be translated once Translator is initialized
     document.addEventListener('i18n-babel-ready', () => Translator.init({
@@ -275,7 +275,7 @@ See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/
     <h1 data-i18n>Translate texts with attribute <code>data-i18n</code></h1>
     <p>
         <i18n-babel i18n-babel='{"name": "i18n Babel!", "url": "https://i18n-babel.com"}'>
-            Visit us: <a href="(%url)">(%name)</a>
+            Visit us: <a href="${url}">${name}</a>
         </i18n-babel>
     </p>
 
@@ -300,7 +300,7 @@ See examples in [examples folder](https://github.com/i18n-babel/i18n-babel/tree/
 
 `app.ts` config file:
 ```ts
-import { Translator } from 'i18n-babel';
+import Translator from 'i18n-babel';
 
 import './app.deps';
 
@@ -338,7 +338,7 @@ export class AppHome {
         return (
             <p>
                 <i18n-babel data-i18n={JSON.stringify(tData)}>
-                    Visit us: <a href="(% url %)">(% name %)</a>
+                    Visit us: <a href="${url}">${name}</a>
                 </i18n-babel>
             </p>
         );
@@ -489,13 +489,13 @@ Translates a text, returns the text itself if no translation is found.
 - **returns**: Translated text
 
 ```js
-const translation = await Translator.t('Hello from (% name %)!', { name: 'i18n-babel' }, 'ca');
+const translation = await Translator.t('Hello from ${name}!', { name: 'i18n-babel' }, 'ca');
 ```
 
 Given an `all-ca.json` like the following one:
 ```json
 {
-    "Hello from (% name %)!": "(% name %) et saluda!"
+    "Hello from ${name}!": "${name} et saluda!"
 }
 ```
 

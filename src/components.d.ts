@@ -2,7 +2,7 @@
 /* tslint:disable */
 export namespace Components {
     interface I18nBabel {
-        /** Json string i18n data, will be used to interpolate string with `(% paramName %)` format */
+        /** Json string i18n data, will be used to interpolate string with `${paramName}` format */
         "dataI18n": string;
     }
 }
@@ -20,7 +20,7 @@ declare global {
 }
 declare namespace LocalJSX {
     interface I18nBabel {
-        /** Json string i18n data, will be used to interpolate string with `(% paramName %)` format */
+        /** Json string i18n data, will be used to interpolate string with `${paramName}` format */
         "dataI18n"?: string;
     }
     interface IntrinsicElements {

@@ -1,6 +1,6 @@
 {
     "The title of the page": "Traduït: El títol de la pàgina",
-    "Visit us: <a href=\"(% url %)\">(% name %)</a>": "Traduït: <a href=\"(% url %)\">Visita'ns a (% name %)</a>",
+    "Visit us: <a href=\"${url}\">${name}</a>": "Traduït: <a href=\"${url}\">Visita'ns a ${name}</a>",
     "This text is <strong>not</strong> yet translated, but it is already identified in all.json file": "",
     "Select language:": "Selecciona l'idioma",
     "Default": "Per defecte",

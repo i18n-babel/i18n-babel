@@ -44,6 +44,10 @@ export interface ITranslatorOptions {
     tagName?: string;
     /** *EXPERIMENTAL*: When using a custom component, it defines the attribute name for intetrpolation options, defaults `'data-i18n'` */
     dataAttribute?: string;
+    /** Left stopper for interpolation, ie. `${myVariable}` would define '${' as left and '}' as right, defaults '${' */
+    interpolateLeft?: string;
+    /** Right stopper for interpolation, ie. `${myVariable}` would define '${' as left and '}' as right, defaults '}' */
+    interpolateRight: string;
 }
 
 /**
