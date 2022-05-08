@@ -47,7 +47,7 @@ export interface ITranslatorOptions {
     /** Left stopper for interpolation, ie. `${myVariable}` would define '${' as left and '}' as right, defaults '${' */
     interpolateLeft?: string;
     /** Right stopper for interpolation, ie. `${myVariable}` would define '${' as left and '}' as right, defaults '}' */
-    interpolateRight: string;
+    interpolateRight?: string;
 }
 
 /**
