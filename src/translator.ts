@@ -128,8 +128,8 @@ export class Translator {
         //     ',', '$', ',', '(', ',', ')', ',', '[', ',',
         //     ']', ',', '{', ',', '}', ',', '|', ',', '\\'];
         // .split('').map(c => (regexSpecialChars.indexOf(c) > 0 ? `\\${c}` : c)).join('');
-        this.ilEsc = options.interpolateLeft.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-        this.irEsc = options.interpolateRight.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        this.ilEsc = this.opts.interpolateLeft.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        this.irEsc = this.opts.interpolateRight.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
         if (this.language) {
             this.language.changeOptions(this.opts);
