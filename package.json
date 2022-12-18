@@ -37,13 +37,15 @@
         "start": "npm run clean && rollup -c rollup.config.dev.js --watch",
         "lint": "echo 'Running linter, please wait...' && (npm run lint-plain || (npm run lint-report; exit -1))",
         "lint-plain": "./node_modules/.bin/eslint --ext .js,.jsx,.ts,.tsx src/ --ignore-path .eslintignore",
-        "lint-report": "./node_modules/.bin/eslint --ext .js,.jsx,.ts,.tsx src/ --ignore-path .eslintignore -f ./node_modules/eslint-html-reporter/reporter.js -o logs/eslint-report.html || opn ./logs/eslint-report.html"
+        "lint-report": "./node_modules/.bin/eslint --ext .js,.jsx,.ts,.tsx src/ --ignore-path .eslintignore -f ./node_modules/eslint-html-reporter/reporter.js -o logs/eslint-report.html || opn ./logs/eslint-report.html",
+        "release": "dotenv release-it --"
     },
     "devDependencies": {
         "@rollup/plugin-typescript": "^8.3.0",
         "@typescript-eslint/eslint-plugin": "^4.20.0",
         "@typescript-eslint/parser": "^4.20.0",
         "babel-plugin-module-resolver": "^4.1.0",
+        "dotenv-cli": "^6.0.0",
         "eslint": "^7.23.0",
         "eslint-config-airbnb-typescript": "^12.3.1",
         "eslint-config-prettier": "^8.1.0",
