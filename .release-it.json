@@ -1,14 +1,19 @@
 {
+    "hooks": {
+        "before:init": ["npm run build", "git branch master -u github/master"],
+        "after:github:release": "git push -u origin"
+    },
     "git": {
         "tagName": "v${version}",
         "addUntrackedFiles": true,
-        "requireCleanWorkingDir": false
+        "requireCleanWorkingDir": false,
+        "pushArgs": "-u github"
+    },
+    "github": {
+        "release": true
     },
     "npm": {
         "publish": true,
         "access": "public"
-    },
-    "hooks": {
-        "after:bump": "npm run build"
     }
 }

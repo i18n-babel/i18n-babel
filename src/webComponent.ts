@@ -1,13 +1,14 @@
 import { TManager } from './tManager';
+import { ITranslatorOptions } from './types';
 
 export class I18nBabelWebcomponent extends HTMLElement {
-    static dataAttribute: string;
+    static options: ITranslatorOptions;
     private isAttached = false;
 
     connectedCallback() {
         if (!this.isAttached) {
             this.isAttached = true;
-            TManager.attach(this, this.getAttribute(I18nBabelWebcomponent.dataAttribute));
+            TManager.attach(this, I18nBabelWebcomponent.options);
         }
     }
 }

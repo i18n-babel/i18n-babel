@@ -22,12 +22,7 @@ window.newTranslations = window.newTranslations || {};
  */
 export class Translator {
     static instance: Translator;
-    private tDonwloader: TranslationsDownloader;
-    private language: Language;
-    private opts: ITranslatorOptions;
-    private availableLangs: string[];
-    private observers: MutationObserver[] = [];
-    private static defaultOptions: ITranslatorOptions = {
+    static defaultOptions: ITranslatorOptions = {
         availableLangs: ['en'],
         defaultLanguage: 'en',
         userLanguage: null,
@@ -46,6 +41,11 @@ export class Translator {
         interpolateLeft: '${',
         interpolateRight: '}',
     };
+    private tDonwloader: TranslationsDownloader;
+    private language: Language;
+    private opts: ITranslatorOptions;
+    private availableLangs: string[];
+    private observers: MutationObserver[] = [];
 
     private ilEsc: string;
     private irEsc: string;
@@ -66,7 +66,7 @@ export class Translator {
             && !customElements.get(this.opts.tagName)
         ) {
             // Register custom component
-            I18nBabelWebcomponent.dataAttribute = this.opts.dataAttribute;
+            I18nBabelWebcomponent.options = this.opts;
             customElements.define(this.opts.tagName, I18nBabelWebcomponent);
         }
         this.refreshMutationObservers();
@@ -160,7 +160,7 @@ export class Translator {
             // Elements inserted via tagName are created with `customElements.define(this.opts.tagName, I18nBabelWebcomponent)`
             // They already have TManager attached
             if (el.hasAttribute && el.hasAttribute(this.opts.dataAttribute) && el.tagName !== this.opts.tagName) {
-                TManager.attach(el, el.getAttribute(this.opts.dataAttribute));
+                TManager.attach(el, I18nBabelWebcomponent.options);
             }
             if (el.shadowRoot) {
                 Array.from(el.shadowRoot.childNodes).forEach(cn => this.processDataAttributes(cn as Element));
@@ -181,6 +181,7 @@ export class Translator {
             attributes: true,
             subtree: true,
             characterData: true,
+            attributeFilter: [this.opts.dataAttribute],
         });
         this.observers.push(observer);
     }
@@ -405,7 +406,7 @@ window.addEventListener('load', () => {
         && !customElements.get('i18n-babel')
     ) {
         // Register custom component
-        I18nBabelWebcomponent.dataAttribute = 'data-i18n';
+        I18nBabelWebcomponent.options = Translator.defaultOptions;
         customElements.define('i18n-babel', I18nBabelWebcomponent);
     }
     raiseEvent(Ei18nEvents.translatorReady);
