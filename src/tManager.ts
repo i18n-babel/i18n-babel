@@ -6,10 +6,9 @@ export class TManager {
     private i18nElmt: Element;
     private originalText: string;
     private refreshInterval: any = -1;
-    private translationResult = '';
     private refreshIntents = 0;
     private isTranslationInCourse = false;
-    private tmpTranslation = document.createElement('span');
+    private currentTranslation = document.createElement('span');
     private static t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>;
     private static isInitialized: boolean;
     private static i18nBabelProcessedAttrName = 'data-i18n-babel';
@@ -63,12 +62,12 @@ export class TManager {
             }
             // Prevents MutationObserver infinite loop: when `innerHTML` will be translated,
             // the translated text will be put in `innerHTML` and new mutation change will be triggered
-            if (m.type === 'childList' && this.translationResult !== this.i18nElmt.innerHTML) {
+            if (m.type === 'childList' && this.currentTranslation.innerHTML !== this.i18nElmt.innerHTML) {
                 // The text to be translated has been changed, so update originalText and reefreshTranslation
                 this.originalText = this.i18nElmt.innerHTML;
                 return true;
             }
-            if (m.type === 'characterData' && this.translationResult !== this.i18nElmt.innerHTML) {
+            if (m.type === 'characterData' && this.currentTranslation.innerHTML !== this.i18nElmt.innerHTML) {
                 return true;
             }
             return isNeeded;
@@ -110,8 +109,8 @@ export class TManager {
                 translation = await TManager.t(this.originalText, i18nData);
             } catch { } // eslint-disable-line no-empty
             // Prevents MutationObserver infinite loop
-            this.translationResult = translation;
-            this.updateTranslation(this.tmpTranslation, this.i18nElmt);
+            this.currentTranslation.innerHTML = translation;
+            this.updateTranslation(this.i18nElmt, this.currentTranslation);
 
             this.isTranslationInCourse = false;
         } else {
@@ -120,31 +119,31 @@ export class TManager {
         }
     }
 
-    updateTranslation(tmpTranslation: HTMLSpanElement, translationElement: Element) {
-        if (tmpTranslation.innerHTML !== translationElement.innerHTML) {
+    updateTranslation(oldTranslation: Element, newTranslation: Element) {
+        if (oldTranslation.innerHTML !== newTranslation.innerHTML) {
             // La traducció ha canviat
-            translationElement.childNodes.forEach((n, key) => {
-                if (tmpTranslation.childNodes.length > key) {
+            oldTranslation.childNodes.forEach((n, key) => {
+                if (newTranslation.childNodes.length > key) {
                     // Encara tenim nodes al tmpSpan
-                    const translatedNode = tmpTranslation.childNodes.item(key);
+                    const translatedNode = newTranslation.childNodes.item(key);
                     if (n.nodeName === translatedNode.nodeName && n.textContent !== translatedNode.textContent) {
                         // Només ha canviat el text
                         // eslint-disable-next-line no-param-reassign
-                        translationElement.childNodes.item(key).textContent = translatedNode.textContent;
+                        oldTranslation.childNodes.item(key).textContent = translatedNode.textContent;
                     } else if (n.nodeName !== translatedNode.nodeName) {
                         // El node ha canviat
-                        translationElement.replaceChild(translatedNode.cloneNode(true), n);
+                        oldTranslation.replaceChild(translatedNode.cloneNode(true), n);
                     }
                 } else {
                     // S'ha eliminat aquest node
-                    translationElement.removeChild(n);
+                    oldTranslation.removeChild(n);
                 } // else: el node no ha canviat
             });
 
             // Afegir els nodes que queden pendents
-            if (tmpTranslation.childNodes.length > translationElement.childNodes.length) {
-                for (let i = translationElement.childNodes.length; i < tmpTranslation.childNodes.length; i += 1) {
-                    translationElement.appendChild(tmpTranslation.childNodes.item(i).cloneNode(true));
+            if (newTranslation.childNodes.length > oldTranslation.childNodes.length) {
+                for (let i = oldTranslation.childNodes.length; i < newTranslation.childNodes.length; i += 1) {
+                    oldTranslation.appendChild(newTranslation.childNodes.item(i).cloneNode(true));
                 }
             }
         } // else: res a actualitzar
