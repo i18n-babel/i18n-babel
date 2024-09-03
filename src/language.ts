@@ -60,6 +60,9 @@ export class Language {
                 || this.opts.defaultLanguage
                 || 'en';
             lang = this.getLangFromDialect(lang);
+            if (!this.opts.availableLangs.includes(lang)){
+                lang = this.opts.defaultLanguage || 'en'
+            }
             if (resetCookie) {
                 this.manageCookie(lang);
             }
