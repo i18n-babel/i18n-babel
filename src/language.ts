@@ -46,29 +46,46 @@ export class Language {
 
     guessLanguage(isSkipCookie = false, resetCookie = false) {
         let lang: string;
-        if (this.opts.isLocalValuesAllowed && !isSkipCookie) {
-            const [, cookieLang] = document.cookie.trim().match(/lang=([^;]*)/) || [];
-            if (cookieLang) {
-                lang = this.getLangFromDialect(cookieLang);
-            }
+
+        if (!isSkipCookie) {
+            lang = this.getLangFromCookie();
         }
 
         if (!lang || resetCookie) {
-            lang = this.opts.userLanguage
-                || (window as any).navigator.userLanguage
-                || window.navigator.language
-                || this.opts.defaultLanguage
-                || 'en';
-            lang = this.getLangFromDialect(lang);
-            if (this.opts.availableLangs.indexOf(lang) === -1) {
+            lang = this.getLangFromNavigatorOrDefault();
+
+            if (this.isLangUnavailable(lang)) {
                 lang = this.opts.defaultLanguage || 'en';
             }
-            if (resetCookie) {
-                this.manageCookie(lang);
-            }
+
+            this.manageCookie(lang);
         }
 
         return lang;
+    }
+
+    getLangFromCookie(): string | undefined {
+        if (this.opts.isLocalValuesAllowed) {
+            const [, cookieLang] = document.cookie.trim().match(/lang=([^;]*)/) || [];
+            if (cookieLang) {
+                return this.getLangFromDialect(cookieLang);
+            }
+        }
+        return undefined;
+    }
+
+    getLangFromNavigatorOrDefault(): string {
+        return this.getLangFromDialect(
+            this.opts.userLanguage
+            || (window as any).navigator.userLanguage
+            || window.navigator.language
+            || this.opts.defaultLanguage
+            || 'en',
+        );
+    }
+
+    isLangUnavailable(lang: string): boolean {
+        return this.opts.availableLangs.indexOf(lang) === -1;
     }
 
     getDefaultLanguage(availableLangs: string[]) {
