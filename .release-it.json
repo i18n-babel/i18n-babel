@@ -1,7 +1,7 @@
 {
     "hooks": {
         "before:init": ["npm run build", "git branch master -u github/master"],
-        "after:github:release": "git push -u origin"
+        "after:github:release": "git push -u github"
     },
     "git": {
         "tagName": "v${version}",
