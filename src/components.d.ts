@@ -1,7 +1,7 @@
 /* eslint-disable */
 /* tslint:disable */
 export namespace Components {
-    interface I18nBabel {
+    interface I18nBabel extends HTMLElement {
         /** Json string i18n data, will be used to interpolate string with `${paramName}` format */
         "dataI18n": string;
     }
