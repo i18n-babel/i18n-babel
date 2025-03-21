@@ -8,18 +8,22 @@ export class TManager {
     private refreshInterval: any = -1;
     private refreshIntents = 0;
     private isTranslationInCourse = false;
+    private target = 'innerHTML';
     private currentTranslation = document.createElement('span');
     private static t: (originalText: string, tData?: TypeTData, lang?: string) => Promise<string>;
     private static isInitialized: boolean;
     private static i18nBabelProcessedAttrName = 'data-i18n-babel';
 
     private constructor(i18nElmt: Element, options?: ITranslatorOptions) {
+        // Mark this element as already processed so attach does not process again
+        // attach is used by translator and webComponent in order to dynamically attach translations to a component
         i18nElmt.setAttribute(TManager.i18nBabelProcessedAttrName, '');
         document.addEventListener(Ei18nEvents.updateTranslations, () => this.handleTranslationsUpdate());
         this.i18nElmt = i18nElmt;
+        this.target = this.i18nElmt.getAttribute(this.options.dataTarget) || 'innerHTML';
         this.options = options;
         this.i18nData = this.i18nElmt.getAttribute(this.options.dataAttribute);
-        this.originalText = this.i18nElmt.innerHTML;
+        this.originalText = this.getText();
         this.startObserver();
         this.onTextChanged();
     }
@@ -38,6 +42,23 @@ export class TManager {
         // To avoid dependency cycle
         TManager.t = t;
         TManager.isInitialized = true;
+    }
+
+    getText(el = this.i18nElmt) {
+        if (this.target === 'innerHTML') {
+            return el.innerHTML;
+        }
+
+        return el.getAttribute(this.target);
+    }
+
+    setText(el = this.i18nElmt, newValue: string) {
+        if (this.target === 'innerHTML') {
+            // eslint-disable-next-line no-param-reassign
+            return (el.innerHTML = newValue);
+        }
+
+        return el.setAttribute(this.target, newValue);
     }
 
     startObserver() {
@@ -62,12 +83,12 @@ export class TManager {
             }
             // Prevents MutationObserver infinite loop: when `innerHTML` will be translated,
             // the translated text will be put in `innerHTML` and new mutation change will be triggered
-            if (m.type === 'childList' && this.currentTranslation.innerHTML !== this.i18nElmt.innerHTML) {
+            if (m.type === 'childList' && this.getText(this.currentTranslation) !== this.getText(this.i18nElmt)) {
                 // The text to be translated has been changed, so update originalText and reefreshTranslation
-                this.originalText = this.i18nElmt.innerHTML;
+                this.originalText = this.getText(this.i18nElmt);
                 return true;
             }
-            if (m.type === 'characterData' && this.currentTranslation.innerHTML !== this.i18nElmt.innerHTML) {
+            if (m.type === 'characterData' && this.getText(this.currentTranslation) !== this.getText(this.i18nElmt)) {
                 return true;
             }
             return isNeeded;
@@ -109,7 +130,7 @@ export class TManager {
                 translation = await TManager.t(this.originalText, i18nData);
             } catch { } // eslint-disable-line no-empty
             // Prevents MutationObserver infinite loop
-            this.currentTranslation.innerHTML = translation;
+            this.setText(this.currentTranslation, translation);
             this.updateTranslation(this.i18nElmt, this.currentTranslation);
 
             this.isTranslationInCourse = false;
@@ -120,7 +141,7 @@ export class TManager {
     }
 
     updateTranslation(oldTranslation: Element, newTranslation: Element) {
-        if (oldTranslation.innerHTML !== newTranslation.innerHTML) {
+        if (this.getText(oldTranslation) !== this.getText(newTranslation)) {
             // La traducció ha canviat
             oldTranslation.childNodes.forEach((n, key) => {
                 if (newTranslation.childNodes.length > key) {

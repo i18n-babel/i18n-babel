@@ -1,6 +1,6 @@
 {
     "name": "i18n-babel",
-    "version": "2.6.4",
+    "version": "2.7.0",
     "description": "Most powerful Javascript i18n Translations manager",
     "main": "dist/i18n-babel.min.js",
     "module": "dist/i18n-babel.es.min.js",

@@ -38,6 +38,7 @@ export class Translator {
         appToken: null,
         tagName: 'i18n-babel',
         dataAttribute: 'data-i18n',
+        dataTarget: 'data-i18n-target',
         interpolateLeft: '${',
         interpolateRight: '}',
     };
