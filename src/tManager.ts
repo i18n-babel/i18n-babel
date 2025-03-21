@@ -19,9 +19,9 @@ export class TManager {
         // attach is used by translator and webComponent in order to dynamically attach translations to a component
         i18nElmt.setAttribute(TManager.i18nBabelProcessedAttrName, '');
         document.addEventListener(Ei18nEvents.updateTranslations, () => this.handleTranslationsUpdate());
+        this.options = options;
         this.i18nElmt = i18nElmt;
         this.target = this.i18nElmt.getAttribute(this.options.dataTarget) || 'innerHTML';
-        this.options = options;
         this.i18nData = this.i18nElmt.getAttribute(this.options.dataAttribute);
         this.originalText = this.getText();
         this.startObserver();
