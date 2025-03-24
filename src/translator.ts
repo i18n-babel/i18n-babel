@@ -217,6 +217,23 @@ export class Translator {
     }
 
     /**
+    * Translates a text, returns the text itself if no translation is found.
+    * @param originalText text to translate
+    * @param tData Interpolation parameters
+    * @param lang Translation language
+    * @returns Translated text
+    */
+    static tJson(originalJson: { [key: string]: string }, tData?: TypeTData, lang?: string) {
+        return Object.keys(originalJson).reduce(async (prev, key) => {
+            const translated = await prev;
+            return {
+                ...translated,
+                [key]: await Translator.getInstance().t(originalJson[key], tData, lang),
+            };
+        }, Promise.resolve({})) as any;
+    }
+
+    /**
      * Translates a text, returns the text itself if no translation is found.
      * @param originalText text to translate
      * @param tData Interpolation parameters
