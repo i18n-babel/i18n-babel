@@ -22,7 +22,7 @@ export interface ITranslatorOptions {
     /** The tag that will be sent to server when missing string is found, defaults `'app'` */
     missingTag?: string;
     /** Path to the location of assets files, defaults `'assets/i18n'` */
-    assetsLocation?: string;
+    assetsLocation?: string | { key: string; value: { [key: string]: string } };
     /**
      * Names of the translations and version files. Examples of use:
      * ```

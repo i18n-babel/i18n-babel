@@ -209,7 +209,15 @@ export class TranslationsDownloader {
         if (this.localVersion === -1) {
             // Obtener la versión en assets
             this.localVersion = 0;
-            const assetsVersion = await fetch(`${this.opts.assetsLocation}/${this.opts.fileNames?.versions || 'versions.json'}`);
+            let assetsVersion;
+            if (typeof this.opts.assetsLocation === 'string') {
+                assetsVersion = await fetch(`${this.opts.assetsLocation}/${this.opts.fileNames?.versions || 'versions.json'}`);
+            } else {
+                assetsVersion = {
+                    ok: true,
+                    json: () => Promise.resolve(this.opts.assetsLocation[this.opts.fileNames?.versions || 'versions.json']),
+                };
+            }
             if (assetsVersion.ok) {
                 let versionJson = {};
                 try {
@@ -227,7 +235,14 @@ export class TranslationsDownloader {
         const fileName = this.opts.fileNames[lang || '--'] || `all${lang ? '-' : ''}${lang}.json`;
         // Ask assets only once!
         if (this.assetsFetcherPromises[fileName] === undefined) {
-            this.assetsFetcherPromises[fileName] = fetch(`${this.opts.assetsLocation}/${fileName}`);
+            if (typeof this.opts.assetsLocation === 'string') {
+                this.assetsFetcherPromises[fileName] = fetch(`${this.opts.assetsLocation}/${fileName}`);
+            } else {
+                this.assetsFetcherPromises[fileName] = Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve(this.opts.assetsLocation[fileName]),
+                } as Response);
+            }
         }
         const resp = await this.assetsFetcherPromises[fileName];
         if (!resp.ok) {

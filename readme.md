@@ -435,8 +435,16 @@ interface ITranslatorOptions {
     tags?: string[];
     /** The tag that will be sent to server when missing string is found, defaults `'app'` */
     missingTag?: string;
-    /** Path to the location of assets files, defaults `'assets/i18n'` */
-    assetsLocation?: string;
+    /**
+     * Path to the location of assets files, defaults `'assets/i18n'`. Alternatively a json in the form:
+     * ```json
+     * {
+     *  'versions.json': { },
+     *  'all.json': { 'key': 'translation', ... },
+     *  'all-en.json': { 'key': 'translation', ... }
+     * }
+     */
+    assetsLocation?: string | { [key: string]: { [key: string]: string } };
     /**
      * Names of the translations and version files. Examples of use:
      * ```
