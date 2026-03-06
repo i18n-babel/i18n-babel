@@ -50,6 +50,8 @@ export interface ITranslatorOptions {
     interpolateLeft?: string;
     /** Right stopper for interpolation, ie. `${myVariable}` would define '${' as left and '}' as right, defaults '}' */
     interpolateRight?: string;
+    /** Name of the cookie used to store the selected language, defaults `'lang'` */
+    cookieName?: string;
 }
 
 /**

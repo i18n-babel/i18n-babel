@@ -66,9 +66,12 @@ export class Language {
 
     getLangFromCookie(): string | undefined {
         if (this.opts.isLocalValuesAllowed) {
-            const [, cookieLang] = document.cookie.trim().match(/lang=([^;]*)/) || [];
-            if (cookieLang) {
-                return this.getLangFromDialect(cookieLang);
+            const name = this.opts.cookieName || 'lang';
+            const found = document.cookie.split(';')
+                .map(c => c.trim().split('='))
+                .find(([key]) => key === name);
+            if (found && found[1]) {
+                return this.getLangFromDialect(found[1]);
             }
         }
         return undefined;
@@ -114,12 +117,13 @@ export class Language {
     }
 
     manageCookie(lang: string) {
+        const name = this.opts.cookieName || 'lang';
         if (lang && this.opts.isLocalValuesAllowed) {
             const exdate: Date = new Date();
             exdate.setDate(exdate.getDate() + 20 * 365);
-            document.cookie = `lang=${lang};expires=${exdate.toUTCString()};path=/`;
+            document.cookie = `${name}=${lang};expires=${exdate.toUTCString()};path=/`;
         } else {
-            document.cookie = 'lang=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;';
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;`;
         }
     }
 }
