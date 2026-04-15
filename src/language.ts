@@ -46,8 +46,7 @@ export class Language {
 
     guessLanguage(isSkipCookie = false, resetCookie = false) {
         let lang: string;
-
-        if (!isSkipCookie) {
+        if (!isSkipCookie && !this.opts.userLanguage) {
             lang = this.getLangFromCookie();
         }
 
